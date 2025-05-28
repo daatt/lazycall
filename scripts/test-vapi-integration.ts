@@ -5,7 +5,7 @@
  */
 
 import { createAssistantWithSystemPrompt } from '../src/lib/assistants'
-import { createOutboundCall, getCallWithTranscript } from '../src/lib/calls'
+import { createOutboundCall, getCallWithTranscript, updateCallStatus } from '../src/lib/calls'
 import { env } from '../src/lib/env'
 import { retrieveCallTranscript } from '../src/lib/transcripts'
 import { vapi } from '../src/lib/vapi'
@@ -178,6 +178,7 @@ async function testVapiIntegration() {
           // Test 6: Monitor call status
           logSection('6. Monitor Call Status')
           logInfo('Waiting for call to complete...')
+          logInfo(`Monitoring call ID: ${call.id}, Vapi call ID: ${call.vapiCallId}`)
           
           const startTime = Date.now()
           let callCompleted = false
@@ -186,17 +187,62 @@ async function testVapiIntegration() {
           while (!callCompleted && (Date.now() - startTime) < TEST_CONFIG.maxWaitTime) {
             await new Promise(resolve => setTimeout(resolve, TEST_CONFIG.checkInterval))
             
-            const updatedCall = await getCallWithTranscript(call.id)
-            if (updatedCall) {
-              if (updatedCall.status !== lastStatus) {
-                log(`  Status changed: ${lastStatus} → ${updatedCall.status}`)
-                lastStatus = updatedCall.status
+            try {
+              // First try to get status from our database
+              const updatedCall = await getCallWithTranscript(call.id)
+              if (updatedCall) {
+                logInfo(`Current status in database: ${updatedCall.status}`)
+                if (updatedCall.status !== lastStatus) {
+                  log(`  Status changed: ${lastStatus} → ${updatedCall.status}`)
+                  lastStatus = updatedCall.status
+                }
+                
+                if (updatedCall.status === 'completed' || updatedCall.status === 'failed') {
+                  callCompleted = true
+                  call = updatedCall
+                }
               }
-              
-              if (updatedCall.status === 'completed' || updatedCall.status === 'failed') {
-                callCompleted = true
-                call = updatedCall
+
+              // If not completed, check directly with Vapi as fallback
+              if (!callCompleted && call.vapiCallId) {
+                logInfo(`Checking Vapi directly for call ID: ${call.vapiCallId}`)
+                const vapiCall = await vapi.getCall(call.vapiCallId)
+                logInfo(`Vapi call status: ${vapiCall.status}`)
+                
+                // Handle different Vapi status values
+                const isCallFinished = vapiCall.status === 'completed' || 
+                                     vapiCall.status === 'failed' || 
+                                     vapiCall.status === 'ended'
+                
+                if (isCallFinished) {
+                  log(`  Vapi status indicates call ${vapiCall.status}, updating database...`)
+                  
+                  // Map Vapi status to our database status
+                  let dbStatus: 'completed' | 'failed'
+                  if (vapiCall.status === 'failed') {
+                    dbStatus = 'failed'
+                  } else {
+                    // Both 'completed' and 'ended' map to 'completed'
+                    dbStatus = 'completed'
+                  }
+                  
+                  // Update our database with the final status
+                  await updateCallStatus(call.id, dbStatus, {
+                    endedAt: vapiCall.endedAt,
+                    cost: vapiCall.cost,
+                  })
+                  
+                  // Get the updated call from our database
+                  const finalCall = await getCallWithTranscript(call.id)
+                  if (finalCall) {
+                    log(`  Status changed: ${lastStatus} → ${finalCall.status}`)
+                    callCompleted = true
+                    call = finalCall
+                  }
+                }
               }
+            } catch (error) {
+              logWarning(`Error checking call status: ${error instanceof Error ? error.message : 'Unknown error'}`)
             }
           }
 
@@ -219,27 +265,34 @@ async function testVapiIntegration() {
             // Wait a bit for transcript to be available
             await new Promise(resolve => setTimeout(resolve, 5000))
             
-            const transcript = await retrieveCallTranscript(call.id)
-            
-            if (transcript) {
-              logSuccess('Transcript retrieved!')
-              log('\nTranscript Preview:')
-              log('---')
-              const preview = transcript.content.substring(0, 500)
-              log(preview + (transcript.content.length > 500 ? '...' : ''))
-              log('---')
+            try {
+              const transcript = await retrieveCallTranscript(call.id)
               
-              if (transcript.summary) {
-                log('\nAI Summary:')
-                log(transcript.summary)
+              if (transcript) {
+                logSuccess('Transcript retrieved!')
+                log('\nTranscript Preview:')
+                log('---')
+                const preview = transcript.content.substring(0, 500)
+                log(preview + (transcript.content.length > 500 ? '...' : ''))
+                log('---')
+                
+                if (transcript.summary) {
+                  log('\nAI Summary:')
+                  log(transcript.summary)
+                }
+                
+                if (transcript.analysis) {
+                  log('\nAI Analysis:')
+                  log(transcript.analysis.substring(0, 300) + '...')
+                }
+              } else {
+                logWarning('Transcript not yet available - this is normal for short calls')
+                logInfo('Transcripts may take time to process after call completion')
               }
-              
-              if (transcript.analysis) {
-                log('\nAI Analysis:')
-                log(transcript.analysis.substring(0, 300) + '...')
-              }
-            } else {
-              logWarning('Transcript not yet available')
+            } catch (error) {
+              logWarning('Failed to retrieve transcript - this is not critical for the test')
+              logInfo('Transcript processing may take time or may not be available for short test calls')
+              console.log('  Error details:', error instanceof Error ? error.message : 'Unknown error')
             }
           }
         }

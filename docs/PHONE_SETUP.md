@@ -118,4 +118,50 @@ interface VapiPhoneNumber {
 - `vapi.getPhoneNumber(id)` - Get a specific phone number
 - `vapi.createPhoneNumber(config)` - Create a new number
 - `vapi.updatePhoneNumber(id, config)` - Update number settings
-- `vapi.deletePhoneNumber(id)` - Delete a phone number 
+- `vapi.deletePhoneNumber(id)` - Delete a phone number
+
+## Webhook Configuration
+
+To receive real-time call status updates, you need to configure a webhook URL in your Vapi account:
+
+1. Log into your [Vapi Dashboard](https://dashboard.vapi.ai)
+2. Navigate to the **Settings** section
+3. Find the **Webhooks** configuration
+4. Add your webhook URL: `https://your-domain.com/api/webhooks`
+5. Save the configuration
+
+### Local Development
+
+For local development, you can use a service like [ngrok](https://ngrok.com) to expose your local server:
+
+1. Install ngrok:
+```bash
+npm install -g ngrok
+```
+
+2. Start your Next.js development server:
+```bash
+npm run dev
+```
+
+3. In a separate terminal, start ngrok:
+```bash
+ngrok http 3000
+```
+
+4. Copy the HTTPS URL provided by ngrok (e.g., `https://abc123.ngrok.io`)
+5. Configure your webhook URL in Vapi as: `https://abc123.ngrok.io/api/webhooks`
+
+### Testing Webhooks
+
+You can verify webhook functionality by:
+
+1. Making a test call
+2. Checking your server logs for incoming webhook events
+3. Verifying that call status updates are reflected in the database
+
+If webhooks aren't working:
+- Verify the webhook URL is correct and accessible
+- Check that your server is running and can receive POST requests
+- Ensure your Vapi API key has the necessary permissions
+- Try using the direct API status check as a fallback 

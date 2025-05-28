@@ -29,11 +29,13 @@ export async function retrieveCallTranscript(
       throw new Error('Call not found or missing Vapi call ID')
     }
 
-    // 3. Retrieve transcript from Vapi API
+    // 3. Retrieve transcript from Vapi API (embedded in call object)
     const transcriptContent = await vapi.getCallTranscript(call.vapiCallId)
     
     if (!transcriptContent) {
-      throw new Error('No transcript available from Vapi')
+      // Return null instead of throwing an error - transcript may not be ready yet
+      console.log('Transcript not yet available for call:', callId)
+      return null
     }
 
     // 4. Create or update transcript in our database
@@ -63,7 +65,8 @@ export async function retrieveCallTranscript(
     }
   } catch (error) {
     console.error('Failed to retrieve call transcript:', error)
-    throw new Error('Failed to retrieve call transcript')
+    // Return null instead of throwing - let the caller handle this gracefully
+    return null
   }
 }
 

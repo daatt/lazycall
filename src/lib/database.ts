@@ -359,6 +359,25 @@ export async function getCall(id: string): Promise<Call | null> {
   }
 }
 
+export async function getCallByVapiId(vapiCallId: string): Promise<Call | null> {
+  try {
+    const call = await prisma.call.findFirst({
+      where: { vapiCallId },
+      include: {
+        assistant: true,
+        transcripts: true,
+      },
+    })
+
+    if (!call) return null
+
+    return convertPrismaCallToCall(call)
+  } catch (error) {
+    console.error('Failed to get call by Vapi ID:', error)
+    throw new Error('Failed to get call by Vapi ID')
+  }
+}
+
 export async function getCalls(
   filters?: CallHistoryFilters
 ): Promise<{ calls: Call[]; total: number }> {

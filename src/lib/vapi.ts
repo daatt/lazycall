@@ -252,39 +252,21 @@ export class VapiClient {
     options?: VapiRequestOptions
   ): Promise<string | null> {
     try {
-      const response = await vapiErrorHandler.executeWithRetry(
-        () => this.makeRequest<string | { transcript?: string; content?: string; messages?: Array<{ role?: string; content?: string }> }>(`/call/${callId}/transcript`, 'GET'),
+      // Get the full call object which includes transcript in artifact field
+      const call = await vapiErrorHandler.executeWithRetry(
+        () => this.makeRequest<VapiCall & { artifact?: { transcript?: string } }>(`/call/${callId}`, 'GET'),
         'vapi',
-        'getCallTranscript'
+        'getCall'
       )
       
-      // Handle different response formats
-      if (typeof response === 'string') {
-        return response
-      }
-      
-      if (response && typeof response === 'object') {
-        // If response has transcript property
-        if ('transcript' in response && typeof response.transcript === 'string') {
-          return response.transcript
-        }
-        
-        // If response has content property
-        if ('content' in response && typeof response.content === 'string') {
-          return response.content
-        }
-        
-        // If response has messages array
-        if ('messages' in response && Array.isArray(response.messages)) {
-          return response.messages
-            .map((msg: any) => `${msg.role || 'Unknown'}: ${msg.content || ''}`)
-            .join('\n')
-        }
+      // Extract transcript from the artifact field
+      if (call.artifact?.transcript) {
+        return call.artifact.transcript
       }
       
       return null
     } catch (error) {
-      console.warn('Failed to retrieve transcript, might not be ready yet:', error)
+      console.warn('Failed to retrieve call or transcript:', error)
       return null
     }
   }
