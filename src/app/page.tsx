@@ -1,3 +1,7 @@
+'use client'
+
+import Link from 'next/link'
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary-50 to-primary-50 dark:from-secondary-900 dark:to-primary-900">
@@ -13,6 +17,26 @@ export default function Home() {
                 LazyCall
               </h1>
             </div>
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link
+                href="/"
+                className="text-secondary-600 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-secondary-100 transition-colors"
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/settings"
+                className="text-secondary-600 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-secondary-100 transition-colors"
+              >
+                Settings
+              </Link>
+              <Link
+                href="/history"
+                className="text-secondary-600 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-secondary-100 transition-colors"
+              >
+                History
+              </Link>
+            </nav>
             <div className="flex items-center space-x-2">
               <span className="status-idle">
                 <div className="w-2 h-2 bg-secondary-400 rounded-full"></div>
@@ -42,7 +66,10 @@ export default function Home() {
 
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="card hover:shadow-medium transition-all duration-300 animate-slide-up group cursor-pointer">
+          <Link
+            href="/"
+            className="card hover:shadow-medium transition-all duration-300 animate-slide-up group cursor-pointer"
+          >
             <div className="card-body">
               <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
                 <svg
@@ -67,9 +94,10 @@ export default function Home() {
                 tasks.
               </p>
             </div>
-          </div>
+          </Link>
 
-          <div
+          <Link
+            href="/settings"
             className="card hover:shadow-medium transition-all duration-300 animate-slide-up group cursor-pointer"
             style={{ animationDelay: '0.1s' }}
           >
@@ -103,9 +131,10 @@ export default function Home() {
                 patterns.
               </p>
             </div>
-          </div>
+          </Link>
 
-          <div
+          <Link
+            href="/history"
             className="card hover:shadow-medium transition-all duration-300 animate-slide-up group cursor-pointer"
             style={{ animationDelay: '0.2s' }}
           >
@@ -132,7 +161,7 @@ export default function Home() {
                 View transcripts and summaries of your previous calls.
               </p>
             </div>
-          </div>
+          </Link>
 
           <div
             className="card hover:shadow-medium transition-all duration-300 animate-slide-up group cursor-pointer"
@@ -192,7 +221,7 @@ export default function Home() {
                 </svg>
                 New Call
               </button>
-              <button className="btn-secondary flex-1">
+              <Link href="/settings" className="btn-secondary flex-1">
                 <svg
                   className="w-4 h-4 mr-2"
                   fill="none"
@@ -213,7 +242,7 @@ export default function Home() {
                   />
                 </svg>
                 Configure Agent
-              </button>
+              </Link>
             </div>
             <div className="pt-4 border-t border-secondary-200 dark:border-secondary-700">
               <div className="flex items-center justify-between text-sm">
@@ -221,6 +250,47 @@ export default function Home() {
                   Recent Activity
                 </span>
                 <span className="badge-primary">0 calls today</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Development Status */}
+        <div className="mt-8 max-w-4xl mx-auto">
+          <div className="card">
+            <div className="card-header">
+              <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100">
+                Development Progress
+              </h3>
+              <p className="text-secondary-600 dark:text-secondary-400 mt-1">
+                Task 1.6 - Project structure organization completed ✅
+              </p>
+            </div>
+            <div className="card-body">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <h4 className="font-medium text-secondary-900 dark:text-secondary-100 mb-2">
+                    ✅ Completed
+                  </h4>
+                  <ul className="space-y-1 text-secondary-600 dark:text-secondary-400">
+                    <li>• TypeScript type definitions</li>
+                    <li>• API route structure</li>
+                    <li>• Component placeholders</li>
+                    <li>• Page organization</li>
+                    <li>• Library structure</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium text-secondary-900 dark:text-secondary-100 mb-2">
+                    🚧 Next Steps
+                  </h4>
+                  <ul className="space-y-1 text-secondary-600 dark:text-secondary-400">
+                    <li>• Database schema (Task 2.0)</li>
+                    <li>• Vapi integration (Task 3.0)</li>
+                    <li>• Component implementation (Task 4.0)</li>
+                    <li>• Real-time features (Task 5.0)</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
