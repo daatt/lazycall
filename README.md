@@ -77,6 +77,7 @@ src/
 - npm or yarn
 - Vapi API key
 - OpenAI API key
+- A phone number configured in Vapi (see [Phone Setup Guide](docs/PHONE_SETUP.md))
 
 ### Installation
 
@@ -103,12 +104,16 @@ OPENAI_API_KEY=your_openai_api_key_here
 DATABASE_URL="file:./dev.db"
 ```
 
-4. Run the development server:
+4. Set up a phone number in Vapi:
+   - Follow the [Phone Setup Guide](docs/PHONE_SETUP.md)
+   - You need at least one phone number to make outbound calls
+
+5. Run the development server:
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📝 API Routes
 

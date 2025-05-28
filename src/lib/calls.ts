@@ -4,10 +4,26 @@ import { retrieveCallTranscript } from './transcripts'
 import { vapi } from './vapi'
 
 /**
+ * Gets the first available phone number from the Vapi account
+ */
+async function getFirstAvailablePhoneNumber(): Promise<string | undefined> {
+  try {
+    const phoneNumbers = await vapi.listPhoneNumbers()
+    if (phoneNumbers && phoneNumbers.length > 0) {
+      return phoneNumbers[0].id
+    }
+    return undefined
+  } catch (error) {
+    console.error('Failed to list phone numbers:', error)
+    return undefined
+  }
+}
+
+/**
  * Creates a new outbound call with customer details
  */
 export async function createOutboundCall(
-  data: CallFormData
+  data: CallFormData & { phoneNumberId?: string }
 ): Promise<Call> {
   try {
     // 1. Get assistant details if specified
@@ -22,11 +38,25 @@ export async function createOutboundCall(
       vapiAssistantId = assistant.vapiAssistantId
     }
 
-    // 2. Create the call in Vapi API
+    // 2. Get phone number ID if not provided
+    let phoneNumberId = data.phoneNumberId
+    if (!phoneNumberId) {
+      // Try to get the first available phone number
+      phoneNumberId = await getFirstAvailablePhoneNumber()
+      if (!phoneNumberId) {
+        throw new Error(
+          'No phone number available. Please configure a phone number in your Vapi account.'
+        )
+      }
+      console.log(`Using phone number ID: ${phoneNumberId}`)
+    }
+
+    // 3. Create the call in Vapi API
     const vapiCall = await vapi.createCall({
       customer: {
         number: data.phoneNumber,
       },
+      phoneNumberId,
       assistantId: vapiAssistantId,
       name: `Call to ${data.phoneNumber}`,
       metadata: {
@@ -34,7 +64,7 @@ export async function createOutboundCall(
       },
     })
 
-    // 3. Create the call in our database
+    // 4. Create the call in our database
     const call = await createDbCall({
       phoneNumber: data.phoneNumber,
       status: 'creating',
@@ -43,6 +73,7 @@ export async function createOutboundCall(
       metadata: {
         customPrompt: data.customPrompt,
         vapiCallId: vapiCall.id,
+        phoneNumberId,
       },
     })
 

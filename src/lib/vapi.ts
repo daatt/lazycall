@@ -64,6 +64,7 @@ export interface VapiCallConfig {
   customer: {
     number: string
   }
+  phoneNumberId?: string
   assistantId?: string
   assistant?: VapiAssistantConfig
   name?: string
@@ -92,6 +93,23 @@ export interface VapiCallListResponse {
     page: number
     limit: number
   }
+}
+
+// Phone Number interfaces
+export interface VapiPhoneNumber {
+  id: string
+  orgId: string
+  name?: string
+  number: string
+  provider: string
+  createdAt: string
+  updatedAt: string
+  twilioPhoneNumber?: string
+  twilioAccountSid?: string
+  assistantId?: string
+  serverUrl?: string
+  serverUrlSecret?: string
+  // ... other phone number properties from API response
 }
 
 // =============================================================================
@@ -269,6 +287,74 @@ export class VapiClient {
       console.warn('Failed to retrieve transcript, might not be ready yet:', error)
       return null
     }
+  }
+
+  // =============================================================================
+  // PHONE NUMBER METHODS
+  // =============================================================================
+
+  async listPhoneNumbers(options?: VapiRequestOptions): Promise<VapiPhoneNumber[]> {
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiPhoneNumber[]>('/phone-number', 'GET'),
+      'vapi',
+      'listPhoneNumbers'
+    )
+  }
+
+  async getPhoneNumber(
+    phoneNumberId: string,
+    options?: VapiRequestOptions
+  ): Promise<VapiPhoneNumber> {
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiPhoneNumber>(`/phone-number/${phoneNumberId}`, 'GET'),
+      'vapi',
+      'getPhoneNumber'
+    )
+  }
+
+  async createPhoneNumber(
+    config: {
+      number?: string
+      name?: string
+      assistantId?: string
+      serverUrl?: string
+      serverUrlSecret?: string
+    },
+    options?: VapiRequestOptions
+  ): Promise<VapiPhoneNumber> {
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiPhoneNumber>('/phone-number', 'POST', config),
+      'vapi',
+      'createPhoneNumber'
+    )
+  }
+
+  async updatePhoneNumber(
+    phoneNumberId: string,
+    config: {
+      name?: string
+      assistantId?: string
+      serverUrl?: string
+      serverUrlSecret?: string
+    },
+    options?: VapiRequestOptions
+  ): Promise<VapiPhoneNumber> {
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiPhoneNumber>(`/phone-number/${phoneNumberId}`, 'PATCH', config),
+      'vapi',
+      'updatePhoneNumber'
+    )
+  }
+
+  async deletePhoneNumber(
+    phoneNumberId: string,
+    options?: VapiRequestOptions
+  ): Promise<void> {
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest(`/phone-number/${phoneNumberId}`, 'DELETE'),
+      'vapi',
+      'deletePhoneNumber'
+    )
   }
 
   // =============================================================================
