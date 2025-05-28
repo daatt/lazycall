@@ -1,3 +1,5 @@
+import { createAssistantWithSystemPrompt } from '@/lib/assistants'
+import type { AssistantFormData } from '@/types'
 import { ApiResponse, Assistant } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -26,21 +28,36 @@ export async function GET(_request: NextRequest) {
 // POST /api/assistants - Create a new assistant
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = await request.json() as AssistantFormData
 
-    // TODO: Implement assistant creation logic
-    // This will be implemented in task 3.2 and 4.6
+    // Validate required fields
+    if (!body.name || !body.systemPrompt) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Name and system prompt are required',
+        },
+        { status: 400 }
+      )
+    }
+
+    // Create the assistant with system prompt integration
+    const assistant = await createAssistantWithSystemPrompt({
+      name: body.name,
+      systemPrompt: body.systemPrompt,
+      voice: body.voice,
+      language: body.language || 'en',
+      model: body.model || 'gpt-4',
+      temperature: body.temperature,
+      maxTokens: body.maxTokens,
+      description: body.description,
+      tags: body.tags,
+      isActive: true,
+    })
 
     const response: ApiResponse<Assistant> = {
       success: true,
-      data: {
-        id: 'placeholder',
-        name: body.name,
-        systemPrompt: body.systemPrompt,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as Assistant,
+      data: assistant,
       message: 'Assistant created successfully',
     }
 

@@ -168,6 +168,54 @@ export class VapiClient {
     }
   }
 
+  async updateAssistant(
+    assistantId: string,
+    config: Partial<VapiAssistantConfig>,
+    options?: VapiRequestOptions
+  ): Promise<VapiAssistant> {
+    try {
+      const requestBody = {
+        ...(config.name && { name: config.name }),
+        ...(config.firstMessage && { firstMessage: config.firstMessage }),
+        ...(config.model && {
+          model: {
+            provider: config.model.provider || 'openai',
+            model: config.model.model,
+            messages: config.model.messages,
+            temperature: config.model.temperature,
+            maxTokens: config.model.maxTokens,
+          },
+        }),
+        ...(config.voice && {
+          voice: {
+            provider: config.voice.provider || 'azure',
+            voiceId: config.voice.voiceId,
+          },
+        }),
+        ...(config.transcriber && {
+          transcriber: {
+            provider: config.transcriber.provider || 'deepgram',
+            language: config.transcriber.language,
+          },
+        }),
+        ...(config.metadata && { metadata: config.metadata }),
+      }
+
+      const response = await this.makeRequest<VapiAssistant>(
+        `/assistant/${assistantId}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify(requestBody),
+        },
+        options
+      )
+
+      return response
+    } catch (error) {
+      throw this.handleError(error, `Failed to update assistant ${assistantId}`)
+    }
+  }
+
   async getAssistant(
     assistantId: string,
     options?: VapiRequestOptions
