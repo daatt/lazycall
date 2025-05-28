@@ -2,29 +2,29 @@
 // Comprehensive utility functions for all database models
 
 import {
-    Assistant,
-    AssistantFilters,
-    AssistantStats,
-    Call,
-    CallHistoryFilters,
-    CallStats,
-    CreateAssistantData,
-    CreateCallData,
-    CreateSettingsData,
-    CreateTranscriptData,
-    PrismaAssistant,
-    PrismaCall,
-    PrismaSettings,
-    PrismaTranscript,
-    Settings,
-    Transcript,
-    TranscriptFilters,
-    TranscriptProcessingStatus,
-    TranscriptStats,
-    UpdateAssistantData,
-    UpdateCallData,
-    UpdateSettingsData,
-    UpdateTranscriptData
+  Assistant,
+  AssistantFilters,
+  AssistantStats,
+  Call,
+  CallHistoryFilters,
+  CallStats,
+  CreateAssistantData,
+  CreateCallData,
+  CreateSettingsData,
+  CreateTranscriptData,
+  PrismaAssistant,
+  PrismaCall,
+  PrismaSettings,
+  PrismaTranscript,
+  Settings,
+  Transcript,
+  TranscriptFilters,
+  TranscriptProcessingStatus,
+  TranscriptStats,
+  UpdateAssistantData,
+  UpdateCallData,
+  UpdateSettingsData,
+  UpdateTranscriptData,
 } from '@/types'
 import { PrismaClient } from '@prisma/client'
 
@@ -52,7 +52,9 @@ function undefinedToNull<T>(value: T | undefined): T | null {
 }
 
 // Helper to safely parse JSON metadata
-function parseMetadata(metadata: string | null): Record<string, unknown> | undefined {
+function parseMetadata(
+  metadata: string | null
+): Record<string, unknown> | undefined {
   if (!metadata) return undefined
   try {
     return JSON.parse(metadata)
@@ -63,7 +65,9 @@ function parseMetadata(metadata: string | null): Record<string, unknown> | undef
 }
 
 // Helper to safely stringify metadata
-function stringifyMetadata(metadata: Record<string, unknown> | undefined): string | null {
+function stringifyMetadata(
+  metadata: Record<string, unknown> | undefined
+): string | null {
   if (!metadata) return null
   try {
     return JSON.stringify(metadata)
@@ -100,19 +104,19 @@ function stringifyTags(tags: string[] | undefined): string | null {
 function castToCallStatus(status: string): Call['status'] {
   const validStatuses: Call['status'][] = [
     'idle',
-    'creating', 
+    'creating',
     'dialing',
     'ringing',
     'in-progress',
     'completed',
     'failed',
-    'cancelled'
+    'cancelled',
   ]
-  
+
   if (validStatuses.includes(status as Call['status'])) {
     return status as Call['status']
   }
-  
+
   // Default to 'idle' if invalid status
   console.warn(`Invalid call status: ${status}, defaulting to 'idle'`)
   return 'idle'
@@ -120,12 +124,17 @@ function castToCallStatus(status: string): Call['status'] {
 
 // Helper to safely cast string to transcript processing status
 function castToProcessingStatus(status: string): TranscriptProcessingStatus {
-  const validStatuses: TranscriptProcessingStatus[] = ['pending', 'processing', 'completed', 'failed']
-  
+  const validStatuses: TranscriptProcessingStatus[] = [
+    'pending',
+    'processing',
+    'completed',
+    'failed',
+  ]
+
   if (validStatuses.includes(status as TranscriptProcessingStatus)) {
     return status as TranscriptProcessingStatus
   }
-  
+
   // Default to 'pending' if invalid status
   console.warn(`Invalid processing status: ${status}, defaulting to 'pending'`)
   return 'pending'
@@ -135,32 +144,36 @@ function castToProcessingStatus(status: string): TranscriptProcessingStatus {
 function validateCallStatus(status: Call['status'] | string): string {
   const validStatuses = [
     'idle',
-    'creating', 
+    'creating',
     'dialing',
     'ringing',
     'in-progress',
     'completed',
     'failed',
-    'cancelled'
+    'cancelled',
   ]
-  
+
   if (typeof status === 'string' && validStatuses.includes(status)) {
     return status
   }
-  
+
   console.warn(`Invalid call status for database: ${status}, using 'idle'`)
   return 'idle'
 }
 
 // Helper to validate transcript processing status for database operations
-function validateProcessingStatus(status: TranscriptProcessingStatus | string): string {
+function validateProcessingStatus(
+  status: TranscriptProcessingStatus | string
+): string {
   const validStatuses = ['pending', 'processing', 'completed', 'failed']
-  
+
   if (typeof status === 'string' && validStatuses.includes(status)) {
     return status
   }
-  
-  console.warn(`Invalid processing status for database: ${status}, using 'pending'`)
+
+  console.warn(
+    `Invalid processing status for database: ${status}, using 'pending'`
+  )
   return 'pending'
 }
 
@@ -183,12 +196,18 @@ function convertPrismaCallToCall(prismaCall: PrismaCall): Call {
     createdAt: prismaCall.createdAt,
     updatedAt: prismaCall.updatedAt,
     // Convert relations if included
-    transcripts: prismaCall.transcripts?.map(convertPrismaTranscriptToTranscript),
-    assistant: prismaCall.assistant ? convertPrismaAssistantToAssistant(prismaCall.assistant) : undefined,
+    transcripts: prismaCall.transcripts?.map(
+      convertPrismaTranscriptToTranscript
+    ),
+    assistant: prismaCall.assistant
+      ? convertPrismaAssistantToAssistant(prismaCall.assistant)
+      : undefined,
   }
 }
 
-function convertPrismaTranscriptToTranscript(prismaTranscript: PrismaTranscript): Transcript {
+function convertPrismaTranscriptToTranscript(
+  prismaTranscript: PrismaTranscript
+): Transcript {
   return {
     id: prismaTranscript.id,
     callId: prismaTranscript.callId,
@@ -203,11 +222,15 @@ function convertPrismaTranscriptToTranscript(prismaTranscript: PrismaTranscript)
     createdAt: prismaTranscript.createdAt,
     updatedAt: prismaTranscript.updatedAt,
     // Convert relations if included
-    call: prismaTranscript.call ? convertPrismaCallToCall(prismaTranscript.call) : undefined,
+    call: prismaTranscript.call
+      ? convertPrismaCallToCall(prismaTranscript.call)
+      : undefined,
   }
 }
 
-function convertPrismaAssistantToAssistant(prismaAssistant: PrismaAssistant): Assistant {
+function convertPrismaAssistantToAssistant(
+  prismaAssistant: PrismaAssistant
+): Assistant {
   return {
     id: prismaAssistant.id,
     name: prismaAssistant.name,
@@ -230,7 +253,9 @@ function convertPrismaAssistantToAssistant(prismaAssistant: PrismaAssistant): As
   }
 }
 
-function convertPrismaSettingsToSettings(prismaSettings: PrismaSettings): Settings {
+function convertPrismaSettingsToSettings(
+  prismaSettings: PrismaSettings
+): Settings {
   return {
     id: prismaSettings.id,
     systemPrompt: prismaSettings.systemPrompt,
@@ -273,20 +298,31 @@ export async function createCall(data: CreateCallData): Promise<Call> {
   }
 }
 
-export async function updateCall(id: string, data: UpdateCallData): Promise<Call> {
+export async function updateCall(
+  id: string,
+  data: UpdateCallData
+): Promise<Call> {
   try {
     const updateData: any = {}
 
     // Only include fields that are explicitly provided
-    if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber
-    if (data.status !== undefined) updateData.status = validateCallStatus(data.status)
-    if (data.assistantId !== undefined) updateData.assistantId = undefinedToNull(data.assistantId)
-    if (data.vapiCallId !== undefined) updateData.vapiCallId = undefinedToNull(data.vapiCallId)
-    if (data.startedAt !== undefined) updateData.startedAt = undefinedToNull(data.startedAt)
-    if (data.endedAt !== undefined) updateData.endedAt = undefinedToNull(data.endedAt)
-    if (data.duration !== undefined) updateData.duration = undefinedToNull(data.duration)
+    if (data.phoneNumber !== undefined)
+      updateData.phoneNumber = data.phoneNumber
+    if (data.status !== undefined)
+      updateData.status = validateCallStatus(data.status)
+    if (data.assistantId !== undefined)
+      updateData.assistantId = undefinedToNull(data.assistantId)
+    if (data.vapiCallId !== undefined)
+      updateData.vapiCallId = undefinedToNull(data.vapiCallId)
+    if (data.startedAt !== undefined)
+      updateData.startedAt = undefinedToNull(data.startedAt)
+    if (data.endedAt !== undefined)
+      updateData.endedAt = undefinedToNull(data.endedAt)
+    if (data.duration !== undefined)
+      updateData.duration = undefinedToNull(data.duration)
     if (data.cost !== undefined) updateData.cost = undefinedToNull(data.cost)
-    if (data.metadata !== undefined) updateData.metadata = stringifyMetadata(data.metadata)
+    if (data.metadata !== undefined)
+      updateData.metadata = stringifyMetadata(data.metadata)
 
     const call = await prisma.call.update({
       where: { id },
@@ -323,7 +359,9 @@ export async function getCall(id: string): Promise<Call | null> {
   }
 }
 
-export async function getCalls(filters?: CallHistoryFilters): Promise<{ calls: Call[]; total: number }> {
+export async function getCalls(
+  filters?: CallHistoryFilters
+): Promise<{ calls: Call[]; total: number }> {
   try {
     const where: any = {}
 
@@ -375,7 +413,10 @@ export async function getCalls(filters?: CallHistoryFilters): Promise<{ calls: C
   }
 }
 
-export async function updateCallStatus(id: string, status: Call['status']): Promise<Call> {
+export async function updateCallStatus(
+  id: string,
+  status: Call['status']
+): Promise<Call> {
   return updateCall(id, { status })
 }
 
@@ -398,7 +439,9 @@ export async function incrementCallUsage(assistantId: string): Promise<void> {
 // TRANSCRIPT OPERATIONS
 // =============================================================================
 
-export async function createTranscript(data: CreateTranscriptData): Promise<Transcript> {
+export async function createTranscript(
+  data: CreateTranscriptData
+): Promise<Transcript> {
   try {
     const transcript = await prisma.transcript.create({
       data: {
@@ -424,7 +467,10 @@ export async function createTranscript(data: CreateTranscriptData): Promise<Tran
   }
 }
 
-export async function updateTranscript(id: string, data: UpdateTranscriptData): Promise<Transcript> {
+export async function updateTranscript(
+  id: string,
+  data: UpdateTranscriptData
+): Promise<Transcript> {
   try {
     const updateData: any = {}
 
@@ -432,13 +478,22 @@ export async function updateTranscript(id: string, data: UpdateTranscriptData): 
       updateData.content = data.content
       updateData.wordCount = data.content.split(' ').length
     }
-    if (data.summary !== undefined) updateData.summary = undefinedToNull(data.summary)
-    if (data.analysis !== undefined) updateData.analysis = undefinedToNull(data.analysis)
-    if (data.processingStatus !== undefined) updateData.processingStatus = validateProcessingStatus(data.processingStatus)
-    if (data.wordCount !== undefined) updateData.wordCount = undefinedToNull(data.wordCount)
-    if (data.confidence !== undefined) updateData.confidence = undefinedToNull(data.confidence)
-    if (data.language !== undefined) updateData.language = undefinedToNull(data.language)
-    if (data.metadata !== undefined) updateData.metadata = stringifyMetadata(data.metadata)
+    if (data.summary !== undefined)
+      updateData.summary = undefinedToNull(data.summary)
+    if (data.analysis !== undefined)
+      updateData.analysis = undefinedToNull(data.analysis)
+    if (data.processingStatus !== undefined)
+      updateData.processingStatus = validateProcessingStatus(
+        data.processingStatus
+      )
+    if (data.wordCount !== undefined)
+      updateData.wordCount = undefinedToNull(data.wordCount)
+    if (data.confidence !== undefined)
+      updateData.confidence = undefinedToNull(data.confidence)
+    if (data.language !== undefined)
+      updateData.language = undefinedToNull(data.language)
+    if (data.metadata !== undefined)
+      updateData.metadata = stringifyMetadata(data.metadata)
 
     const transcript = await prisma.transcript.update({
       where: { id },
@@ -509,7 +564,9 @@ export async function getTranscript(id: string): Promise<Transcript | null> {
   }
 }
 
-export async function getTranscripts(filters?: TranscriptFilters): Promise<{ transcripts: Transcript[]; total: number }> {
+export async function getTranscripts(
+  filters?: TranscriptFilters
+): Promise<{ transcripts: Transcript[]; total: number }> {
   try {
     const where: any = {}
 
@@ -518,7 +575,9 @@ export async function getTranscripts(filters?: TranscriptFilters): Promise<{ tra
     }
 
     if (filters?.processingStatus) {
-      where.processingStatus = validateProcessingStatus(filters.processingStatus)
+      where.processingStatus = validateProcessingStatus(
+        filters.processingStatus
+      )
     }
 
     if (filters?.language) {
@@ -543,7 +602,9 @@ export async function getTranscripts(filters?: TranscriptFilters): Promise<{ tra
     ])
 
     return {
-      transcripts: transcripts.map(transcript => convertPrismaTranscriptToTranscript(transcript)),
+      transcripts: transcripts.map(transcript =>
+        convertPrismaTranscriptToTranscript(transcript)
+      ),
       total,
     }
   } catch (error) {
@@ -552,7 +613,9 @@ export async function getTranscripts(filters?: TranscriptFilters): Promise<{ tra
   }
 }
 
-export async function getTranscriptByCallId(callId: string): Promise<Transcript | null> {
+export async function getTranscriptByCallId(
+  callId: string
+): Promise<Transcript | null> {
   try {
     const transcript = await prisma.transcript.findFirst({
       where: { callId },
@@ -569,7 +632,9 @@ export async function getTranscriptByCallId(callId: string): Promise<Transcript 
   }
 }
 
-export async function getTranscriptsByCallId(callId: string): Promise<Transcript[]> {
+export async function getTranscriptsByCallId(
+  callId: string
+): Promise<Transcript[]> {
   try {
     const transcripts = await prisma.transcript.findMany({
       where: { callId },
@@ -579,7 +644,9 @@ export async function getTranscriptsByCallId(callId: string): Promise<Transcript
       orderBy: { createdAt: 'desc' },
     })
 
-    return transcripts.map(transcript => convertPrismaTranscriptToTranscript(transcript))
+    return transcripts.map(transcript =>
+      convertPrismaTranscriptToTranscript(transcript)
+    )
   } catch (error) {
     console.error('Failed to get transcripts by call ID:', error)
     throw new Error('Failed to get transcripts by call ID')
@@ -596,7 +663,9 @@ export async function getPendingTranscripts(): Promise<Transcript[]> {
       orderBy: { createdAt: 'asc' },
     })
 
-    return transcripts.map(transcript => convertPrismaTranscriptToTranscript(transcript))
+    return transcripts.map(transcript =>
+      convertPrismaTranscriptToTranscript(transcript)
+    )
   } catch (error) {
     console.error('Failed to get pending transcripts:', error)
     throw new Error('Failed to get pending transcripts')
@@ -607,7 +676,9 @@ export async function getPendingTranscripts(): Promise<Transcript[]> {
 // ASSISTANT OPERATIONS
 // =============================================================================
 
-export async function createAssistant(data: CreateAssistantData): Promise<Assistant> {
+export async function createAssistant(
+  data: CreateAssistantData
+): Promise<Assistant> {
   try {
     const assistant = await prisma.assistant.create({
       data: {
@@ -632,21 +703,29 @@ export async function createAssistant(data: CreateAssistantData): Promise<Assist
   }
 }
 
-export async function updateAssistant(id: string, data: UpdateAssistantData): Promise<Assistant> {
+export async function updateAssistant(
+  id: string,
+  data: UpdateAssistantData
+): Promise<Assistant> {
   try {
     const updateData: any = {}
 
     // Only include fields that are explicitly provided
     if (data.name !== undefined) updateData.name = data.name
-    if (data.systemPrompt !== undefined) updateData.systemPrompt = data.systemPrompt
-    if (data.vapiAssistantId !== undefined) updateData.vapiAssistantId = undefinedToNull(data.vapiAssistantId)
+    if (data.systemPrompt !== undefined)
+      updateData.systemPrompt = data.systemPrompt
+    if (data.vapiAssistantId !== undefined)
+      updateData.vapiAssistantId = undefinedToNull(data.vapiAssistantId)
     if (data.isActive !== undefined) updateData.isActive = data.isActive
     if (data.voice !== undefined) updateData.voice = undefinedToNull(data.voice)
     if (data.language !== undefined) updateData.language = data.language
     if (data.model !== undefined) updateData.model = data.model
-    if (data.temperature !== undefined) updateData.temperature = undefinedToNull(data.temperature)
-    if (data.maxTokens !== undefined) updateData.maxTokens = undefinedToNull(data.maxTokens)
-    if (data.description !== undefined) updateData.description = undefinedToNull(data.description)
+    if (data.temperature !== undefined)
+      updateData.temperature = undefinedToNull(data.temperature)
+    if (data.maxTokens !== undefined)
+      updateData.maxTokens = undefinedToNull(data.maxTokens)
+    if (data.description !== undefined)
+      updateData.description = undefinedToNull(data.description)
     if (data.tags !== undefined) updateData.tags = stringifyTags(data.tags)
 
     const assistant = await prisma.assistant.update({
@@ -680,7 +759,9 @@ export async function getAssistant(id: string): Promise<Assistant | null> {
   }
 }
 
-export async function getAssistants(filters?: AssistantFilters): Promise<{ assistants: Assistant[]; total: number }> {
+export async function getAssistants(
+  filters?: AssistantFilters
+): Promise<{ assistants: Assistant[]; total: number }> {
   try {
     const where: any = {}
 
@@ -718,7 +799,9 @@ export async function getAssistants(filters?: AssistantFilters): Promise<{ assis
     ])
 
     return {
-      assistants: assistants.map(assistant => convertPrismaAssistantToAssistant(assistant)),
+      assistants: assistants.map(assistant =>
+        convertPrismaAssistantToAssistant(assistant)
+      ),
       total,
     }
   } catch (error) {
@@ -732,7 +815,9 @@ export async function getActiveAssistants(): Promise<Assistant[]> {
   return result.assistants
 }
 
-export async function getAssistantByVapiId(vapiAssistantId: string): Promise<Assistant | null> {
+export async function getAssistantByVapiId(
+  vapiAssistantId: string
+): Promise<Assistant | null> {
   try {
     const assistant = await prisma.assistant.findFirst({
       where: { vapiAssistantId },
@@ -770,7 +855,9 @@ export async function getSettings(): Promise<Settings | null> {
   }
 }
 
-export async function updateSettings(data: UpdateSettingsData): Promise<Settings> {
+export async function updateSettings(
+  data: UpdateSettingsData
+): Promise<Settings> {
   try {
     // Get the first (and should be only) settings record
     const existingSettings = await getSettings()
@@ -783,10 +870,14 @@ export async function updateSettings(data: UpdateSettingsData): Promise<Settings
     const updateData: any = {}
 
     // Only include fields that are explicitly provided
-    if (data.systemPrompt !== undefined) updateData.systemPrompt = data.systemPrompt
-    if (data.defaultAssistantId !== undefined) updateData.defaultAssistantId = undefinedToNull(data.defaultAssistantId)
-    if (data.openaiApiKey !== undefined) updateData.openaiApiKey = undefinedToNull(data.openaiApiKey)
-    if (data.vapiApiKey !== undefined) updateData.vapiApiKey = undefinedToNull(data.vapiApiKey)
+    if (data.systemPrompt !== undefined)
+      updateData.systemPrompt = data.systemPrompt
+    if (data.defaultAssistantId !== undefined)
+      updateData.defaultAssistantId = undefinedToNull(data.defaultAssistantId)
+    if (data.openaiApiKey !== undefined)
+      updateData.openaiApiKey = undefinedToNull(data.openaiApiKey)
+    if (data.vapiApiKey !== undefined)
+      updateData.vapiApiKey = undefinedToNull(data.vapiApiKey)
 
     const settings = await prisma.settings.update({
       where: { id: existingSettings.id },
@@ -800,11 +891,15 @@ export async function updateSettings(data: UpdateSettingsData): Promise<Settings
   }
 }
 
-export async function createDefaultSettings(overrides?: Partial<CreateSettingsData>): Promise<Settings> {
+export async function createDefaultSettings(
+  overrides?: Partial<CreateSettingsData>
+): Promise<Settings> {
   try {
     const settings = await prisma.settings.create({
       data: {
-        systemPrompt: overrides?.systemPrompt || 'You are a helpful AI assistant making phone calls on behalf of the user. Be polite, professional, and accomplish the task efficiently.',
+        systemPrompt:
+          overrides?.systemPrompt ||
+          'You are a helpful AI assistant making phone calls on behalf of the user. Be polite, professional, and accomplish the task efficiently.',
         defaultAssistantId: undefinedToNull(overrides?.defaultAssistantId),
         openaiApiKey: undefinedToNull(overrides?.openaiApiKey),
         vapiApiKey: undefinedToNull(overrides?.vapiApiKey),
@@ -822,7 +917,9 @@ export async function createDefaultSettings(overrides?: Partial<CreateSettingsDa
 // ENHANCED UTILITY FUNCTIONS
 // =============================================================================
 
-export async function getCallsWithTranscripts(limit: number = 10): Promise<Call[]> {
+export async function getCallsWithTranscripts(
+  limit: number = 10
+): Promise<Call[]> {
   try {
     const calls = await prisma.call.findMany({
       include: {
@@ -844,16 +941,17 @@ export async function getCallsWithTranscripts(limit: number = 10): Promise<Call[
 
 export async function getCallStats(): Promise<CallStats> {
   try {
-    const [totalCalls, completedCalls, failedCalls, aggregates] = await Promise.all([
-      prisma.call.count(),
-      prisma.call.count({ where: { status: 'completed' } }),
-      prisma.call.count({ where: { status: 'failed' } }),
-      prisma.call.aggregate({
-        _sum: { duration: true, cost: true },
-        _avg: { duration: true, cost: true },
-        where: { status: 'completed' },
-      }),
-    ])
+    const [totalCalls, completedCalls, failedCalls, aggregates] =
+      await Promise.all([
+        prisma.call.count(),
+        prisma.call.count({ where: { status: 'completed' } }),
+        prisma.call.count({ where: { status: 'failed' } }),
+        prisma.call.aggregate({
+          _sum: { duration: true, cost: true },
+          _avg: { duration: true, cost: true },
+          where: { status: 'completed' },
+        }),
+      ])
 
     const successRate = totalCalls > 0 ? (completedCalls / totalCalls) * 100 : 0
 
@@ -875,22 +973,25 @@ export async function getCallStats(): Promise<CallStats> {
 
 export async function getAssistantStats(): Promise<AssistantStats> {
   try {
-    const [totalAssistants, activeAssistants, mostUsedAssistant, avgUsage] = await Promise.all([
-      prisma.assistant.count(),
-      prisma.assistant.count({ where: { isActive: true } }),
-      prisma.assistant.findFirst({
-        orderBy: { usageCount: 'desc' },
-        where: { usageCount: { gt: 0 } },
-      }),
-      prisma.assistant.aggregate({
-        _avg: { usageCount: true },
-      }),
-    ])
+    const [totalAssistants, activeAssistants, mostUsedAssistant, avgUsage] =
+      await Promise.all([
+        prisma.assistant.count(),
+        prisma.assistant.count({ where: { isActive: true } }),
+        prisma.assistant.findFirst({
+          orderBy: { usageCount: 'desc' },
+          where: { usageCount: { gt: 0 } },
+        }),
+        prisma.assistant.aggregate({
+          _avg: { usageCount: true },
+        }),
+      ])
 
     return {
       totalAssistants,
       activeAssistants,
-      mostUsedAssistant: mostUsedAssistant ? convertPrismaAssistantToAssistant(mostUsedAssistant) : null,
+      mostUsedAssistant: mostUsedAssistant
+        ? convertPrismaAssistantToAssistant(mostUsedAssistant)
+        : null,
       averageUsage: avgUsage._avg.usageCount || 0,
     }
   } catch (error) {
@@ -906,7 +1007,7 @@ export async function getTranscriptStats(): Promise<TranscriptStats> {
       pendingTranscripts,
       completedTranscripts,
       failedTranscripts,
-      aggregates
+      aggregates,
     ] = await Promise.all([
       prisma.transcript.count(),
       prisma.transcript.count({ where: { processingStatus: 'pending' } }),
@@ -935,7 +1036,10 @@ export async function getTranscriptStats(): Promise<TranscriptStats> {
 // ADVANCED QUERY FUNCTIONS
 // =============================================================================
 
-export async function searchCalls(query: string, limit: number = 20): Promise<Call[]> {
+export async function searchCalls(
+  query: string,
+  limit: number = 20
+): Promise<Call[]> {
   try {
     const calls = await prisma.call.findMany({
       where: {
@@ -960,7 +1064,10 @@ export async function searchCalls(query: string, limit: number = 20): Promise<Ca
   }
 }
 
-export async function searchTranscripts(query: string, limit: number = 20): Promise<Transcript[]> {
+export async function searchTranscripts(
+  query: string,
+  limit: number = 20
+): Promise<Transcript[]> {
   try {
     const transcripts = await prisma.transcript.findMany({
       where: {
@@ -981,14 +1088,19 @@ export async function searchTranscripts(query: string, limit: number = 20): Prom
       take: limit,
     })
 
-    return transcripts.map(transcript => convertPrismaTranscriptToTranscript(transcript))
+    return transcripts.map(transcript =>
+      convertPrismaTranscriptToTranscript(transcript)
+    )
   } catch (error) {
     console.error('Failed to search transcripts:', error)
     throw new Error('Failed to search transcripts')
   }
 }
 
-export async function searchAssistants(query: string, limit: number = 20): Promise<Assistant[]> {
+export async function searchAssistants(
+  query: string,
+  limit: number = 20
+): Promise<Assistant[]> {
   try {
     const assistants = await prisma.assistant.findMany({
       where: {
@@ -999,14 +1111,13 @@ export async function searchAssistants(query: string, limit: number = 20): Promi
           { tags: { contains: query } },
         ],
       },
-      orderBy: [
-        { usageCount: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ usageCount: 'desc' }, { createdAt: 'desc' }],
       take: limit,
     })
 
-    return assistants.map(assistant => convertPrismaAssistantToAssistant(assistant))
+    return assistants.map(assistant =>
+      convertPrismaAssistantToAssistant(assistant)
+    )
   } catch (error) {
     console.error('Failed to search assistants:', error)
     throw new Error('Failed to search assistants')

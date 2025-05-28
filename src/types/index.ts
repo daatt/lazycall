@@ -280,17 +280,48 @@ export interface DashboardStats {
 // TYPE CONVERSION UTILITIES
 // =============================================================================
 
-export type CreateCallData = Omit<Call, 'id' | 'createdAt' | 'updatedAt' | 'transcripts' | 'assistant'>
-export type UpdateCallData = Partial<Omit<Call, 'id' | 'createdAt' | 'updatedAt' | 'transcripts' | 'assistant'>>
+export type CreateCallData = Omit<
+  Call,
+  'id' | 'createdAt' | 'updatedAt' | 'transcripts' | 'assistant'
+>
+export type UpdateCallData = Partial<
+  Omit<Call, 'id' | 'createdAt' | 'updatedAt' | 'transcripts' | 'assistant'>
+>
 
-export type CreateTranscriptData = Omit<Transcript, 'id' | 'createdAt' | 'updatedAt' | 'processingStatus' | 'wordCount' | 'confidence' | 'language' | 'metadata' | 'call'>
-export type UpdateTranscriptData = Partial<Omit<Transcript, 'id' | 'callId' | 'createdAt' | 'updatedAt' | 'call'>>
+export type CreateTranscriptData = Omit<
+  Transcript,
+  | 'id'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'processingStatus'
+  | 'wordCount'
+  | 'confidence'
+  | 'language'
+  | 'metadata'
+  | 'call'
+>
+export type UpdateTranscriptData = Partial<
+  Omit<Transcript, 'id' | 'callId' | 'createdAt' | 'updatedAt' | 'call'>
+>
 
-export type CreateAssistantData = Omit<Assistant, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'lastUsedAt' | 'calls'>
-export type UpdateAssistantData = Partial<Omit<Assistant, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'lastUsedAt' | 'calls'>>
+export type CreateAssistantData = Omit<
+  Assistant,
+  'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'lastUsedAt' | 'calls'
+>
+export type UpdateAssistantData = Partial<
+  Omit<
+    Assistant,
+    'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'lastUsedAt' | 'calls'
+  >
+>
 
-export type CreateSettingsData = Omit<Settings, 'id' | 'createdAt' | 'updatedAt'>
-export type UpdateSettingsData = Partial<Omit<Settings, 'id' | 'createdAt' | 'updatedAt'>>
+export type CreateSettingsData = Omit<
+  Settings,
+  'id' | 'createdAt' | 'updatedAt'
+>
+export type UpdateSettingsData = Partial<
+  Omit<Settings, 'id' | 'createdAt' | 'updatedAt'>
+>
 
 // =============================================================================
 // VALIDATION TYPES
@@ -331,7 +362,7 @@ export interface VapiWebhookPayload {
   }
 }
 
-export type WebhookEventType = 
+export type WebhookEventType =
   | 'call.started'
   | 'call.ended'
   | 'call.failed'
