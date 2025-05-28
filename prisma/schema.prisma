@@ -40,6 +40,7 @@ model Call {
 
   // Relations
   transcripts  Transcript[] // One call can have multiple transcript entries
+  assistant    Assistant?   @relation(fields: [assistantId], references: [id]) // Optional assistant used for this call
 
   @@map("calls")
 }
@@ -68,4 +69,33 @@ model Transcript {
   @@map("transcripts")
 }
 
-// Additional models (Assistant) will be added in upcoming tasks
+// Assistant model for storing Vapi assistant configurations
+model Assistant {
+  id              String   @id @default(cuid())
+  name            String   // Human-readable name for the assistant
+  systemPrompt    String   // System prompt that defines assistant behavior
+  vapiAssistantId String?  // Vapi API assistant ID after creation
+  isActive        Boolean  @default(true) // Whether this assistant is available for use
+  voice           String?  // Voice configuration (e.g., "jennifer", "mark")
+  language        String   @default("en") // Language code (en, es, fr, etc.)
+  model           String   @default("gpt-4") // AI model to use (gpt-4, gpt-3.5-turbo, etc.)
+  temperature     Float?   // AI temperature setting (0.0 to 1.0)
+  maxTokens       Int?     // Maximum tokens for responses
+  description     String?  // Optional description of assistant purpose
+  tags            String?  // JSON array of tags for categorization
+  usageCount      Int      @default(0) // Number of times this assistant has been used
+  lastUsedAt      DateTime? // When this assistant was last used
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  calls           Call[]   // Calls that used this assistant (via assistantId)
+
+  // Indexes for better query performance
+  @@index([isActive])
+  @@index([vapiAssistantId])
+  @@index([lastUsedAt])
+  @@map("assistants")
+}
+
+// Additional models will be added in upcoming tasks

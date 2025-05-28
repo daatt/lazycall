@@ -52,9 +52,8 @@
   - [x] 2.2 Create Settings model for storing system prompt and configuration ✅ COMPLETED
   - [x] 2.3 Create Call model with fields for status, timestamps, phone number, and metadata ✅ COMPLETED
   - [x] 2.4 Create Transcript model linked to Call for storing conversation data ✅ COMPLETED
-  - [ ] 2.5 Create Assistant model for storing Vapi assistant configurations
+  - [x] 2.5 Create Assistant model for storing Vapi assistant configurations ✅ COMPLETED
   - [ ] 2.6 Run initial database migration and generate Prisma client
-  - [ ] 2.7 Create database utility functions for common operations
 
 - [ ] 3.0 Vapi API Integration
   - [ ] 3.1 Create Vapi client wrapper with authentication and error handling
