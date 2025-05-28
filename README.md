@@ -1,31 +1,23 @@
 # LazyCall - AI Agent Calling Tool
 
-A personal web application that enables users to leverage AI agents to make phone calls on their behalf using the Vapi API.
+Automate your phone calls with intelligent AI agents. Make appointments, reservations, and handle routine calls while you focus on what matters most.
 
 ## Features
 
-- **Automate Personal Phone Tasks**: Delegate routine phone calls to an AI agent
-- **Intuitive Call Configuration**: Set up calls with custom prompts through a clean web interface
-- **Real-time Call Monitoring**: Track call progress and status updates
-- **Complete Call History**: Searchable log of all calls with transcripts and summaries
-- **AI-Generated Insights**: Automated summaries and analysis of call outcomes
+- **AI-Powered Calls**: Use Vapi to create intelligent phone agents
+- **Custom Prompts**: Configure your AI agent's personality and behavior
+- **Call History**: Track and review all your automated calls
+- **Real-time Status**: Monitor call progress with live updates
+- **Beautiful UI**: Modern, responsive design with Tailwind CSS
 
-## Tech Stack
-
-- **Frontend**: Next.js 14 with App Router, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: Prisma with SQLite (planned)
-- **AI Integration**: Vapi API for calls, OpenAI for summaries (planned)
-- **Styling**: Tailwind CSS with responsive design
-
-## Getting Started
+## Development
 
 ### Prerequisites
 
 - Node.js 18+ 
 - npm or yarn
 
-### Installation
+### Getting Started
 
 1. Clone the repository
 2. Install dependencies:
@@ -33,35 +25,68 @@ A personal web application that enables users to leverage AI agents to make phon
    npm install
    ```
 
-3. Start the development server:
+3. Copy environment variables:
+   ```bash
+   cp env.example .env
+   ```
+
+4. Fill in your API keys in `.env`:
+   - `VAPI_API_KEY`: Your Vapi API key
+   - `OPENAI_API_KEY`: Your OpenAI API key
+
+5. Start the development server:
    ```bash
    npm run dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+### Code Quality
 
-### Environment Variables (Coming Soon)
+This project uses ESLint and Prettier for code quality and formatting:
 
-Create a `.env.local` file with:
-```
-VAPI_API_KEY=your_vapi_api_key
-OPENAI_API_KEY=your_openai_api_key
-```
+#### Available Scripts
 
-## Development
+- `npm run lint` - Run ESLint to check for code issues
+- `npm run lint:fix` - Automatically fix ESLint issues
+- `npm run lint:strict` - Run ESLint with zero warnings allowed
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check if code is properly formatted
+- `npm run type-check` - Run TypeScript type checking
+- `npm run check-all` - Run all quality checks (types, linting, formatting)
+- `npm run fix-all` - Automatically fix linting and formatting issues
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+#### VS Code Integration
+
+The project includes VS Code settings for automatic formatting and linting:
+
+- Install recommended extensions when prompted
+- Code will be automatically formatted on save
+- ESLint issues will be highlighted in real-time
+- Tailwind CSS IntelliSense for better styling experience
+
+#### Code Quality Rules
+
+- **TypeScript**: Strict type checking with helpful warnings
+- **React**: Best practices for React and hooks usage
+- **Accessibility**: JSX accessibility rules for better UX
+- **Code Style**: Consistent formatting with Prettier
+- **Import Organization**: Automatic import sorting and organization
+
+## Tech Stack
+
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS with custom design system
+- **Database**: Prisma with SQLite
+- **AI Integration**: Vapi for voice AI, OpenAI for summaries
+- **Code Quality**: ESLint + Prettier + TypeScript
 
 ## Project Structure
 
 ```
 src/
-├── app/                 # Next.js App Router pages
+├── app/                 # Next.js app router pages
 ├── components/          # Reusable React components
-├── lib/                # Utility functions and API clients
+├── lib/                # Utility functions and configurations
 └── types/              # TypeScript type definitions
 ```
 

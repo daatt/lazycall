@@ -11,14 +11,18 @@
 - `src/components/CallStatus.tsx` - Component for displaying call progress
 - `src/components/CallHistory.tsx` - Component for displaying call history
 - `src/components/TranscriptViewer.tsx` - Component for viewing transcripts and summaries
+- `src/components/ui/Button.tsx` - Reusable button component with design system
 - `src/lib/vapi.ts` - Vapi API client and helper functions
 - `src/lib/database.ts` - Database operations for storing calls and settings
 - `src/lib/openai.ts` - OpenAI client for generating call summaries
 - `src/lib/env.ts` - Environment variable configuration and validation
+- `src/lib/utils.ts` - Utility functions for CSS class merging
 - `src/types/index.ts` - TypeScript type definitions
 - `package.json` - Project dependencies and scripts
 - `next.config.js` - Next.js configuration
-- `tailwind.config.js` - Tailwind CSS configuration
+- `tailwind.config.js` - Tailwind CSS configuration with custom design system
+- `postcss.config.js` - PostCSS configuration
+- `src/app/globals.css` - Global styles with custom component classes
 - `prisma/schema.prisma` - Database schema definition
 - `.env` - Environment variables (created)
 - `env.example` - Environment variables template
@@ -29,7 +33,7 @@
 
 - Using Next.js 14 with App Router for the web application
 - Prisma with SQLite for local database storage
-- Tailwind CSS for styling
+- Tailwind CSS for styling with custom design system
 - Real-time updates using WebSocket or Server-Sent Events
 - Unit tests should be placed alongside components (e.g., `CallForm.test.tsx`)
 
@@ -39,8 +43,8 @@
   - [x] 1.1 Initialize Next.js 14 project with TypeScript and App Router ✅ COMPLETED
   - [x] 1.2 Install and configure required dependencies (Prisma, Tailwind CSS, etc.) ✅ COMPLETED
   - [x] 1.3 Set up environment variables for Vapi API key and OpenAI API key ✅ COMPLETED
-  - [ ] 1.4 Configure Tailwind CSS with custom styling for the application
-  - [ ] 1.5 Set up ESLint and Prettier for code formatting
+  - [x] 1.4 Configure Tailwind CSS with custom styling for the application ✅ COMPLETED
+  - [x] 1.5 Set up ESLint and Prettier for code formatting ✅ COMPLETED
   - [ ] 1.6 Create basic project structure with src/ directory organization
 
 - [ ] 2.0 Database Schema and Models
