@@ -48,7 +48,7 @@
   - [x] 1.6 Create basic project structure with src/ directory organization ✅ COMPLETED
 
 - [ ] 2.0 Database Schema and Models
-  - [ ] 2.1 Initialize Prisma with SQLite database configuration
+  - [x] 2.1 Initialize Prisma with SQLite database configuration ✅ COMPLETED
   - [ ] 2.2 Create Settings model for storing system prompt and configuration
   - [ ] 2.3 Create Call model with fields for status, timestamps, phone number, and metadata
   - [ ] 2.4 Create Transcript model linked to Call for storing conversation data
