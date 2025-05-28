@@ -1,0 +1,7 @@
+node_modules
+.next
+.git
+*.md
+package-lock.json
+yarn.lock
+public 
