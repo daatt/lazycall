@@ -1,29 +1,38 @@
-import { VapiCallEvent } from '@/types'
+import { updateCallStatus } from '@/lib/calls'
+import { createTranscript } from '@/lib/database'
+import { CreateTranscriptData, VapiWebhookPayload, WebhookEventType } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
 
 // POST /api/webhooks - Handle Vapi webhook events
 export async function POST(request: NextRequest) {
   try {
-    const event: VapiCallEvent = await request.json()
+    const payload: VapiWebhookPayload = await request.json()
+    const { message } = payload
 
-    // TODO: Implement webhook event processing
-    // This will be implemented in task 3.4
-
-    console.warn('Received Vapi webhook event:', event)
+    // Validate webhook payload
+    if (!message || !message.type || !message.timestamp) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid webhook payload' },
+        { status: 400 }
+      )
+    }
 
     // Process different event types
-    switch (event.type) {
-      case 'call-started':
-        // TODO: Update call status to 'in-progress'
+    switch (message.type as WebhookEventType) {
+      case 'call.started':
+        await handleCallStarted(message)
         break
-      case 'call-ended':
-        // TODO: Update call status to 'completed' and fetch transcript
+      case 'call.ended':
+        await handleCallEnded(message)
         break
-      case 'call-failed':
-        // TODO: Update call status to 'failed'
+      case 'call.failed':
+        await handleCallFailed(message)
+        break
+      case 'transcript.ready':
+        await handleTranscriptReady(message)
         break
       default:
-        console.warn('Unhandled event type:', event.type)
+        console.warn('Unhandled event type:', message.type)
     }
 
     return NextResponse.json({ success: true })
@@ -42,4 +51,50 @@ export async function GET() {
     success: true,
     message: 'Webhook endpoint is active',
   })
+}
+
+// Helper functions for handling different event types
+async function handleCallStarted(message: VapiWebhookPayload['message']) {
+  if (!message.call?.id) {
+    throw new Error('Missing call ID in webhook payload')
+  }
+
+  await updateCallStatus(message.call.id, 'in-progress', {
+    startedAt: message.call.startedAt,
+  })
+}
+
+async function handleCallEnded(message: VapiWebhookPayload['message']) {
+  if (!message.call?.id) {
+    throw new Error('Missing call ID in webhook payload')
+  }
+
+  await updateCallStatus(message.call.id, 'completed', {
+    endedAt: message.call.endedAt,
+    cost: message.call.cost,
+  })
+}
+
+async function handleCallFailed(message: VapiWebhookPayload['message']) {
+  if (!message.call?.id) {
+    throw new Error('Missing call ID in webhook payload')
+  }
+
+  await updateCallStatus(message.call.id, 'failed', {
+    endedAt: message.call.endedAt,
+  })
+}
+
+async function handleTranscriptReady(message: VapiWebhookPayload['message']) {
+  if (!message.call?.id || !message.call.transcript) {
+    throw new Error('Missing call ID or transcript in webhook payload')
+  }
+
+  // Create transcript record
+  const transcriptData: CreateTranscriptData = {
+    callId: message.call.id,
+    content: message.call.transcript,
+  }
+
+  await createTranscript(transcriptData)
 }

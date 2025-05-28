@@ -2,6 +2,7 @@
 // Comprehensive client implementation with authentication and error handling
 
 import { env } from './env'
+import { vapiErrorHandler, type ApiError } from './error-handling'
 
 // =============================================================================
 // VAPI API TYPES AND INTERFACES
@@ -126,46 +127,11 @@ export class VapiClient {
     config: VapiAssistantConfig,
     options?: VapiRequestOptions
   ): Promise<VapiAssistant> {
-    try {
-      const requestBody = {
-        name: config.name,
-        firstMessage: config.firstMessage || 'Hello! How can I help you today?',
-        model: {
-          provider: config.model.provider || 'openai',
-          model: config.model.model || 'gpt-4',
-          messages: config.model.messages || [
-            {
-              role: 'system',
-              content: 'You are a helpful AI assistant.',
-            },
-          ],
-          temperature: config.model.temperature ?? 0.7,
-          maxTokens: config.model.maxTokens ?? 1000,
-        },
-        voice: config.voice || {
-          provider: 'azure',
-          voiceId: 'andrew',
-        },
-        transcriber: config.transcriber || {
-          provider: 'deepgram',
-          language: 'en',
-        },
-        metadata: config.metadata || {},
-      }
-
-      const response = await this.makeRequest<VapiAssistant>(
-        '/assistant',
-        {
-          method: 'POST',
-          body: JSON.stringify(requestBody),
-        },
-        options
-      )
-
-      return response
-    } catch (error) {
-      throw this.handleError(error, 'Failed to create assistant')
-    }
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiAssistant>('/assistant', 'POST', config),
+      'vapi',
+      'createAssistant'
+    )
   }
 
   async updateAssistant(
@@ -173,89 +139,41 @@ export class VapiClient {
     config: Partial<VapiAssistantConfig>,
     options?: VapiRequestOptions
   ): Promise<VapiAssistant> {
-    try {
-      const requestBody = {
-        ...(config.name && { name: config.name }),
-        ...(config.firstMessage && { firstMessage: config.firstMessage }),
-        ...(config.model && {
-          model: {
-            provider: config.model.provider || 'openai',
-            model: config.model.model,
-            messages: config.model.messages,
-            temperature: config.model.temperature,
-            maxTokens: config.model.maxTokens,
-          },
-        }),
-        ...(config.voice && {
-          voice: {
-            provider: config.voice.provider || 'azure',
-            voiceId: config.voice.voiceId,
-          },
-        }),
-        ...(config.transcriber && {
-          transcriber: {
-            provider: config.transcriber.provider || 'deepgram',
-            language: config.transcriber.language,
-          },
-        }),
-        ...(config.metadata && { metadata: config.metadata }),
-      }
-
-      const response = await this.makeRequest<VapiAssistant>(
-        `/assistant/${assistantId}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify(requestBody),
-        },
-        options
-      )
-
-      return response
-    } catch (error) {
-      throw this.handleError(error, `Failed to update assistant ${assistantId}`)
-    }
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiAssistant>(`/assistant/${assistantId}`, 'PATCH', config),
+      'vapi',
+      'updateAssistant'
+    )
   }
 
   async getAssistant(
     assistantId: string,
     options?: VapiRequestOptions
   ): Promise<VapiAssistant> {
-    try {
-      return await this.makeRequest<VapiAssistant>(
-        `/assistant/${assistantId}`,
-        { method: 'GET' },
-        options
-      )
-    } catch (error) {
-      throw this.handleError(error, `Failed to get assistant ${assistantId}`)
-    }
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiAssistant>(`/assistant/${assistantId}`, 'GET'),
+      'vapi',
+      'getAssistant'
+    )
   }
 
   async listAssistants(options?: VapiRequestOptions): Promise<VapiAssistant[]> {
-    try {
-      return await this.makeRequest<VapiAssistant[]>(
-        '/assistant',
-        { method: 'GET' },
-        options
-      )
-    } catch (error) {
-      throw this.handleError(error, 'Failed to list assistants')
-    }
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiAssistant[]>('/assistant', 'GET'),
+      'vapi',
+      'listAssistants'
+    )
   }
 
   async deleteAssistant(
     assistantId: string,
     options?: VapiRequestOptions
   ): Promise<void> {
-    try {
-      await this.makeRequest(
-        `/assistant/${assistantId}`,
-        { method: 'DELETE' },
-        options
-      )
-    } catch (error) {
-      throw this.handleError(error, `Failed to delete assistant ${assistantId}`)
-    }
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest(`/assistant/${assistantId}`, 'DELETE'),
+      'vapi',
+      'deleteAssistant'
+    )
   }
 
   // =============================================================================
@@ -266,45 +184,22 @@ export class VapiClient {
     config: VapiCallConfig,
     options?: VapiRequestOptions
   ): Promise<VapiCall> {
-    try {
-      const requestBody = {
-        customer: {
-          number: config.customer.number,
-        },
-        name: config.name,
-        metadata: config.metadata || {},
-        ...(config.assistantId ? { assistantId: config.assistantId } : {}),
-        ...(config.assistant ? { assistant: config.assistant } : {}),
-      }
-
-      const response = await this.makeRequest<VapiCall>(
-        '/call',
-        {
-          method: 'POST',
-          body: JSON.stringify(requestBody),
-        },
-        options
-      )
-
-      return response
-    } catch (error) {
-      throw this.handleError(error, 'Failed to create call')
-    }
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiCall>('/call', 'POST', config),
+      'vapi',
+      'createCall'
+    )
   }
 
   async getCall(
     callId: string,
     options?: VapiRequestOptions
   ): Promise<VapiCall> {
-    try {
-      return await this.makeRequest<VapiCall>(
-        `/call/${callId}`,
-        { method: 'GET' },
-        options
-      )
-    } catch (error) {
-      throw this.handleError(error, `Failed to get call ${callId}`)
-    }
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiCall>(`/call/${callId}`, 'GET'),
+      'vapi',
+      'getCall'
+    )
   }
 
   async listCalls(
@@ -316,77 +211,63 @@ export class VapiClient {
     },
     options?: VapiRequestOptions
   ): Promise<VapiCall[]> {
-    try {
-      const queryParams = new URLSearchParams()
-
-      if (filters?.assistantId) {
-        queryParams.append('assistantId', filters.assistantId)
-      }
-      if (filters?.limit) {
-        queryParams.append('limit', filters.limit.toString())
-      }
-      if (filters?.createdAtGt) {
-        queryParams.append('createdAtGt', filters.createdAtGt)
-      }
-      if (filters?.createdAtLt) {
-        queryParams.append('createdAtLt', filters.createdAtLt)
-      }
-
-      const endpoint = queryParams.toString()
-        ? `/call?${queryParams.toString()}`
-        : '/call'
-
-      return await this.makeRequest<VapiCall[]>(
-        endpoint,
-        { method: 'GET' },
-        options
-      )
-    } catch (error) {
-      throw this.handleError(error, 'Failed to list calls')
-    }
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest<VapiCall[]>('/call', 'GET', { filters }),
+      'vapi',
+      'listCalls'
+    )
   }
 
   async cancelCall(
     callId: string,
     options?: VapiRequestOptions
   ): Promise<void> {
-    try {
-      await this.makeRequest(`/call/${callId}`, { method: 'DELETE' }, options)
-    } catch (error) {
-      throw this.handleError(error, `Failed to cancel call ${callId}`)
-    }
+    return vapiErrorHandler.executeWithRetry(
+      () => this.makeRequest(`/call/${callId}`, 'DELETE'),
+      'vapi',
+      'cancelCall'
+    )
   }
 
   async getCallTranscript(
     callId: string,
     options?: VapiRequestOptions
-  ): Promise<string> {
+  ): Promise<string | null> {
     try {
-      const call = await this.getCall(callId, options)
-
-      // Extract transcript from call artifact or messages
-      if (call && typeof call === 'object' && 'artifact' in call) {
-        const artifact = call.artifact as { transcript?: string }
-        if (artifact?.transcript) {
-          return artifact.transcript
+      const response = await vapiErrorHandler.executeWithRetry(
+        () => this.makeRequest<string | { transcript?: string; content?: string; messages?: Array<{ role?: string; content?: string }> }>(`/call/${callId}/transcript`, 'GET'),
+        'vapi',
+        'getCallTranscript'
+      )
+      
+      // Handle different response formats
+      if (typeof response === 'string') {
+        return response
+      }
+      
+      if (response && typeof response === 'object') {
+        // If response has transcript property
+        if ('transcript' in response && typeof response.transcript === 'string') {
+          return response.transcript
+        }
+        
+        // If response has content property
+        if ('content' in response && typeof response.content === 'string') {
+          return response.content
+        }
+        
+        // If response has messages array
+        if ('messages' in response && Array.isArray(response.messages)) {
+          return response.messages
+            .map((msg: any) => `${msg.role || 'Unknown'}: ${msg.content || ''}`)
+            .join('\n')
         }
       }
-
-      // Fallback: extract from messages if available
-      if (call && typeof call === 'object' && 'messages' in call) {
-        const messages = call.messages as Array<{
-          role: string
-          message: string
-        }>
-        return messages.map(msg => `${msg.role}: ${msg.message}`).join('\n')
-      }
-
-      return ''
+      
+      return null
     } catch (error) {
-      throw this.handleError(
-        error,
-        `Failed to get transcript for call ${callId}`
-      )
+      console.warn('Failed to retrieve transcript, might not be ready yet:', error)
+      return null
     }
   }
 
@@ -396,149 +277,37 @@ export class VapiClient {
 
   private async makeRequest<T = unknown>(
     endpoint: string,
-    requestInit: RequestInit = {},
-    options?: VapiRequestOptions
+    method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+    data?: unknown
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
-    const timeout = options?.timeout ?? this.defaultTimeout
-    const maxRetries = options?.retries ?? this.retryConfig.maxRetries
-    const skipRetry = options?.skipRetry ?? false
+    
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: data ? JSON.stringify(data) : undefined,
+    })
 
-    const headers = {
-      Authorization: `Bearer ${this.apiKey}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      ...requestInit.headers,
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      const error = new Error(
+        `Vapi API error: ${response.status} ${response.statusText}`
+      ) as ApiError
+      error.status = response.status
+      error.details = errorData
+      error.service = 'vapi'
+      throw error
     }
 
-    const requestOptions: RequestInit = {
-      ...requestInit,
-      headers,
+    // Handle empty responses
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return undefined as T
     }
 
-    let lastError: Error = new Error('Request failed')
-    let attempt = 0
-
-    while (attempt <= maxRetries) {
-      try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), timeout)
-
-        const response = await fetch(url, {
-          ...requestOptions,
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeoutId)
-
-        if (!response.ok) {
-          const errorText = await response.text().catch(() => 'Unknown error')
-
-          let errorData: unknown
-          try {
-            errorData = JSON.parse(errorText)
-          } catch {
-            errorData = { message: errorText }
-          }
-
-          const error = new Error(
-            `Vapi API error: ${response.status} ${response.statusText}`
-          ) as VapiError
-          error.status = response.status
-          error.details = errorData
-
-          // Don't retry client errors (4xx) except for rate limiting (429)
-          if (
-            response.status >= 400 &&
-            response.status < 500 &&
-            response.status !== 429
-          ) {
-            throw error
-          }
-
-          throw error
-        }
-
-        // Handle empty responses (like DELETE operations)
-        if (
-          response.status === 204 ||
-          response.headers.get('content-length') === '0'
-        ) {
-          return undefined as T
-        }
-
-        const responseText = await response.text()
-        if (!responseText) {
-          return undefined as T
-        }
-
-        try {
-          return JSON.parse(responseText) as T
-        } catch (parseError) {
-          throw new Error(`Failed to parse response: ${parseError}`)
-        }
-      } catch (error) {
-        lastError = error as Error
-        attempt++
-
-        // Don't retry if explicitly disabled or on last attempt
-        if (skipRetry || attempt > maxRetries) {
-          break
-        }
-
-        // Don't retry on certain errors
-        if (this.shouldNotRetry(error as VapiError)) {
-          break
-        }
-
-        // Calculate delay with exponential backoff
-        const delay = Math.min(
-          this.retryConfig.baseDelayMs *
-            Math.pow(this.retryConfig.backoffMultiplier, attempt - 1),
-          this.retryConfig.maxDelayMs
-        )
-
-        // Add jitter to prevent thundering herd
-        const jitter = Math.random() * 0.1 * delay
-        await this.sleep(delay + jitter)
-
-        console.warn(
-          `Vapi API request failed (attempt ${attempt}/${maxRetries + 1}), retrying in ${Math.round(delay)}ms:`,
-          error
-        )
-      }
-    }
-
-    throw lastError
-  }
-
-  private shouldNotRetry(error: VapiError): boolean {
-    // Don't retry on authentication errors, not found, etc.
-    if (error.status) {
-      return (
-        error.status === 401 || error.status === 403 || error.status === 404
-      )
-    }
-
-    // Don't retry on network errors that won't benefit from retry
-    const message = error.message.toLowerCase()
-    return message.includes('abort') || message.includes('network error')
-  }
-
-  private handleError(error: unknown, context: string): VapiError {
-    if (error instanceof Error) {
-      const vapiError = error as VapiError
-      vapiError.message = `${context}: ${vapiError.message}`
-      return vapiError
-    }
-
-    return {
-      message: `${context}: ${String(error)}`,
-    }
-  }
-
-  private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return await response.json() as T
   }
 
   // =============================================================================
