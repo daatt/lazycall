@@ -49,9 +49,9 @@
 
 - [ ] 2.0 Database Schema and Models
   - [x] 2.1 Initialize Prisma with SQLite database configuration ✅ COMPLETED
-  - [ ] 2.2 Create Settings model for storing system prompt and configuration
-  - [ ] 2.3 Create Call model with fields for status, timestamps, phone number, and metadata
-  - [ ] 2.4 Create Transcript model linked to Call for storing conversation data
+  - [x] 2.2 Create Settings model for storing system prompt and configuration ✅ COMPLETED
+  - [x] 2.3 Create Call model with fields for status, timestamps, phone number, and metadata ✅ COMPLETED
+  - [x] 2.4 Create Transcript model linked to Call for storing conversation data ✅ COMPLETED
   - [ ] 2.5 Create Assistant model for storing Vapi assistant configurations
   - [ ] 2.6 Run initial database migration and generate Prisma client
   - [ ] 2.7 Create database utility functions for common operations

@@ -10,4 +10,62 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Models will be added in the next task (2.0 Database Schema and Models)
+// Settings model for storing system prompt and application configuration
+model Settings {
+  id                String   @id @default(cuid())
+  systemPrompt      String   @default("You are a helpful AI assistant making phone calls on behalf of the user. Be polite, professional, and accomplish the task efficiently.")
+  defaultAssistantId String?  // Optional reference to default assistant
+  openaiApiKey      String?  // Optional OpenAI API key override
+  vapiApiKey        String?  // Optional Vapi API key override
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("settings")
+}
+
+// Call model for storing phone call records and status
+model Call {
+  id           String    @id @default(cuid())
+  phoneNumber  String    // Phone number to call
+  status       String    @default("idle") // CallStatus enum: idle, creating, dialing, ringing, in-progress, completed, failed, cancelled
+  assistantId  String?   // Optional reference to assistant used for this call
+  vapiCallId   String?   // Vapi API call ID for tracking
+  startedAt    DateTime? // When the call actually started
+  endedAt      DateTime? // When the call ended
+  duration     Int?      // Call duration in seconds
+  cost         Float?    // Call cost in dollars
+  metadata     String?   // JSON string for flexible additional data
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  transcripts  Transcript[] // One call can have multiple transcript entries
+
+  @@map("calls")
+}
+
+// Transcript model for storing conversation data and AI-generated analysis
+model Transcript {
+  id              String   @id @default(cuid())
+  callId          String   // Foreign key to Call
+  content         String   // Full transcript content (can be very long)
+  summary         String?  // AI-generated summary of the conversation
+  analysis        String?  // AI-generated analysis of call outcome
+  processingStatus String  @default("pending") // pending, processing, completed, failed
+  wordCount       Int?     // Number of words in transcript for analytics
+  confidence      Float?   // Transcript confidence score (0.0 to 1.0)
+  language        String?  // Detected language of the conversation
+  metadata        String?  // JSON string for additional processing data
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  call            Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance
+  @@index([callId])
+  @@index([processingStatus])
+  @@map("transcripts")
+}
+
+// Additional models (Assistant) will be added in upcoming tasks
