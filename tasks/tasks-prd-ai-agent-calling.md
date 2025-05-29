@@ -73,8 +73,8 @@
   - [x] 3.7 Create error handling and retry logic for API failures ✅ COMPLETED
 
 - [ ] 4.0 Core Web Application Pages
-  - [ ] 4.1 Create main dashboard layout with navigation and responsive design
-  - [ ] 4.2 Build CallForm component for entering phone number and call prompt
+  - [x] 4.1 Create main dashboard layout with navigation and responsive design ✅ COMPLETED
+  - [x] 4.2 Build CallForm component for entering phone number and call prompt ✅ COMPLETED
   - [ ] 4.3 Implement settings page for configuring system prompt
   - [ ] 4.4 Create call history page with search, filtering, and pagination
   - [ ] 4.5 Build TranscriptViewer component for displaying call results
