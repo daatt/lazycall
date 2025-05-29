@@ -3,11 +3,12 @@
 import { TranscriptViewer } from '@/components/TranscriptViewer'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { SkeletonTable } from '@/components/ui/SkeletonLoader'
 import {
-  Call,
-  CallHistoryFilters,
-  CallStatus,
-  PaginatedResponse,
+    Call,
+    CallHistoryFilters,
+    CallStatus,
+    PaginatedResponse,
 } from '@/types'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -386,12 +387,7 @@ export function CallHistory({
 
           <div className="card-body p-0">
             {isLoading ? (
-              <div className="p-8 text-center">
-                <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-secondary-600 dark:text-secondary-400">
-                  Loading calls...
-                </p>
-              </div>
+              <SkeletonTable rows={calls.limit || 25} columns={6} />
             ) : calls.data.length === 0 ? (
               <div className="p-8 text-center">
                 <div className="w-16 h-16 bg-secondary-100 dark:bg-secondary-700 rounded-lg flex items-center justify-center mx-auto mb-4">

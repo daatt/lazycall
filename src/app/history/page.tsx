@@ -3,11 +3,11 @@
 import { CallHistory } from '@/components/CallHistory'
 import DashboardLayout from '@/components/ui/DashboardLayout'
 import {
-    ApiResponse,
-    Assistant,
-    Call,
-    CallHistoryFilters,
-    PaginatedResponse,
+  ApiResponse,
+  Assistant,
+  Call,
+  CallHistoryFilters,
+  PaginatedResponse,
 } from '@/types'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -110,9 +110,12 @@ export default function HistoryPage() {
     loadCalls({})
   }, [loadCalls])
 
-  const handleFiltersChange = useCallback((filters: CallHistoryFilters) => {
-    loadCalls(filters)
-  }, [loadCalls])
+  const handleFiltersChange = useCallback(
+    (filters: CallHistoryFilters) => {
+      loadCalls(filters)
+    },
+    [loadCalls]
+  )
 
   return (
     <DashboardLayout>
