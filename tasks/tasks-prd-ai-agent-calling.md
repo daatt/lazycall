@@ -83,7 +83,7 @@
   - [x] 4.8 Create loading states and error handling for all pages ✅ COMPLETED
 
 - [ ] 5.0 Real-time Call Management and Status Updates
-  - [ ] 5.1 Implement CallStatus component with real-time progress indicator
+  - [x] 5.1 Implement CallStatus component with real-time progress indicator ✅ COMPLETED
   - [ ] 5.2 Set up Server-Sent Events or WebSocket for live call status updates
   - [ ] 5.3 Create call state management system (idle, dialing, in-progress, completed)
   - [ ] 5.4 Implement automatic transcript fetching and summary generation post-call

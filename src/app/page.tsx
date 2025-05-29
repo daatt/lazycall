@@ -1,13 +1,14 @@
 'use client'
 
 import { CallForm } from '@/components/CallForm'
+import { CallStatus } from '@/components/CallStatus'
 import DashboardLayout from '@/components/ui/DashboardLayout'
 import { InlineError } from '@/components/ui/ErrorDisplay'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { SkeletonCard } from '@/components/ui/SkeletonLoader'
 import { ApiResponse, Call, CallFormData } from '@/types'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 export default function Home() {
   const [isCreatingCall, setIsCreatingCall] = useState(false)
@@ -34,6 +35,46 @@ export default function Home() {
     }
 
     checkSystemStatus()
+  }, [])
+
+  // Handle real-time call status updates
+  const handleCallStatusUpdate = useCallback((updatedCall: Call) => {
+    setLastCreatedCall(updatedCall)
+
+    // Update status message based on call status
+    switch (updatedCall.status) {
+      case 'creating':
+        setCallStatus('Setting up your call...')
+        break
+      case 'dialing':
+        setCallStatus(`Dialing ${updatedCall.phoneNumber}...`)
+        break
+      case 'ringing':
+        setCallStatus('Phone is ringing...')
+        break
+      case 'in-progress':
+        setCallStatus('Call connected and in progress!')
+        break
+      case 'completed':
+        setCallStatus('Call completed successfully!')
+        break
+      case 'failed':
+        setCallStatus('Call failed to connect')
+        break
+      case 'cancelled':
+        setCallStatus('Call was cancelled')
+        break
+      default:
+        setCallStatus(`Call status: ${updatedCall.status}`)
+    }
+
+    // Auto-dismiss status for completed/failed calls
+    if (['completed', 'failed', 'cancelled'].includes(updatedCall.status)) {
+      setTimeout(() => {
+        setCallStatus(null)
+        setLastCreatedCall(null)
+      }, 15000)
+    }
   }, [])
 
   const handleCreateCall = async (formData: CallFormData) => {
@@ -65,20 +106,19 @@ export default function Home() {
 
       const call = result.data
       setLastCreatedCall(call)
-      setCallStatus(`Call created successfully! Calling ${call.phoneNumber}...`)
+      setCallStatus(`Call created successfully! Status: ${call.status}`)
       setShowCallForm(false)
       setRetryCount(0) // Reset retry count on success
 
-      // Auto-dismiss success message after 10 seconds
-      setTimeout(() => {
-        setCallStatus(null)
-      }, 10000)
+      // Initial status update
+      handleCallStatusUpdate(call)
     } catch (error) {
       console.error('Failed to create call:', error)
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred'
       setError(`Failed to create call: ${errorMessage}`)
       setCallStatus(null)
+      setLastCreatedCall(null)
     } finally {
       setIsCreatingCall(false)
     }
@@ -100,6 +140,12 @@ export default function Home() {
     setCallStatus(null)
     setLastCreatedCall(null)
   }
+
+  const isActiveCall = lastCreatedCall
+    ? ['creating', 'dialing', 'ringing', 'in-progress'].includes(
+        lastCreatedCall.status
+      )
+    : false
 
   // Show loading state for initial page load
   if (isPageLoading) {
@@ -136,49 +182,57 @@ export default function Home() {
           />
         )}
 
-        {/* Status Message */}
-        {callStatus && (
-          <div
-            className={`card max-w-2xl mx-auto ${
-              callStatus.includes('successfully')
-                ? 'border-success-200 bg-success-50 dark:bg-success-900/20'
-                : callStatus.includes('Failed')
-                  ? 'border-error-200 bg-error-50 dark:bg-error-900/20'
-                  : 'border-primary-200 bg-primary-50 dark:bg-primary-900/20'
-            }`}
-          >
-            <div className="card-body text-center">
-              <div className="flex items-center justify-center mb-2">
-                {isCreatingCall && (
-                  <LoadingSpinner size="sm" className="mr-2" />
-                )}
-                <p
-                  className={`font-medium ${
-                    callStatus.includes('successfully')
-                      ? 'text-success-700 dark:text-success-300'
-                      : callStatus.includes('Failed')
-                        ? 'text-error-700 dark:text-error-300'
-                        : 'text-primary-700 dark:text-primary-300'
-                  }`}
-                >
-                  {callStatus}
-                </p>
-              </div>
+        {/* Real-time Call Status Display */}
+        {lastCreatedCall && (
+          <div className="max-w-2xl mx-auto">
+            <CallStatus
+              call={lastCreatedCall}
+              onStatusUpdate={handleCallStatusUpdate}
+              enableRealTimeUpdates={isActiveCall}
+            />
 
-              {lastCreatedCall && (
-                <div className="mt-3 text-sm text-secondary-600 dark:text-secondary-400">
-                  <p>Call ID: {lastCreatedCall.id}</p>
-                  <p>Status: {lastCreatedCall.status}</p>
-                </div>
-              )}
-
-              <button
-                onClick={clearStatus}
-                className="mt-2 text-sm text-secondary-500 hover:text-secondary-700 dark:text-secondary-400 dark:hover:text-secondary-200"
+            {/* Enhanced Status Message */}
+            {callStatus && (
+              <div
+                className={`card mt-4 ${
+                  callStatus.includes('successfully') ||
+                  callStatus.includes('progress')
+                    ? 'border-success-200 bg-success-50 dark:bg-success-900/20'
+                    : callStatus.includes('failed') ||
+                        callStatus.includes('Failed')
+                      ? 'border-error-200 bg-error-50 dark:bg-error-900/20'
+                      : 'border-primary-200 bg-primary-50 dark:bg-primary-900/20'
+                }`}
               >
-                Dismiss
-              </button>
-            </div>
+                <div className="card-body text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    {isActiveCall && (
+                      <LoadingSpinner size="sm" className="mr-2" />
+                    )}
+                    <p
+                      className={`font-medium ${
+                        callStatus.includes('successfully') ||
+                        callStatus.includes('progress')
+                          ? 'text-success-700 dark:text-success-300'
+                          : callStatus.includes('failed') ||
+                              callStatus.includes('Failed')
+                            ? 'text-error-700 dark:text-error-300'
+                            : 'text-primary-700 dark:text-primary-300'
+                      }`}
+                    >
+                      {callStatus}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={clearStatus}
+                    className="mt-2 text-sm text-secondary-500 hover:text-secondary-700 dark:text-secondary-400 dark:hover:text-secondary-200"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -224,7 +278,7 @@ export default function Home() {
         )}
 
         {/* Main Actions */}
-        {!showCallForm && (
+        {!showCallForm && !lastCreatedCall && (
           <div className="card max-w-2xl mx-auto">
             <div className="card-header text-center">
               <h2 className="text-xl font-semibold text-secondary-900 dark:text-secondary-100">
@@ -272,6 +326,52 @@ export default function Home() {
                 )}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Secondary Actions for Active Calls */}
+        {lastCreatedCall && (
+          <div className="flex justify-center space-x-4 max-w-2xl mx-auto">
+            <button
+              onClick={() => {
+                setShowCallForm(true)
+                clearError()
+              }}
+              disabled={isCreatingCall}
+              className="btn btn-secondary"
+            >
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              Make Another Call
+            </button>
+
+            <Link href="/history" className="btn btn-outline">
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              View All Calls
+            </Link>
           </div>
         )}
 
@@ -349,47 +449,48 @@ export default function Home() {
               Development Progress
             </h3>
             <p className="text-secondary-600 dark:text-secondary-400 mt-1">
-              Task 4.8 - Enhanced loading states and error handling ✅
+              Task 5.1 - Real-time CallStatus component implemented ✅
             </p>
           </div>
           <div className="card-body">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <h4 className="font-medium text-secondary-900 dark:text-secondary-100 mb-2">
-                  ✅ Enhanced Features
+                  ✅ Real-time Features
                 </h4>
                 <ul className="space-y-1 text-secondary-600 dark:text-secondary-400">
-                  <li>• Improved loading states with spinners</li>
-                  <li>• Comprehensive error handling</li>
-                  <li>• Retry mechanisms with limits</li>
-                  <li>• Skeleton loading for initial page load</li>
-                  <li>• Inline error displays</li>
-                  <li>• Status message management</li>
-                  <li>• Error dismissal and recovery</li>
-                  <li>• Loading indicators for actions</li>
+                  <li>• Live call status tracking</li>
+                  <li>• Dynamic progress indicators</li>
+                  <li>• Real-time duration counter</li>
+                  <li>• Automatic status polling</li>
+                  <li>• Visual progress bars</li>
+                  <li>• Animated status indicators</li>
+                  <li>• Enhanced status icons</li>
+                  <li>• Live update notifications</li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-medium text-secondary-900 dark:text-secondary-100 mb-2">
-                  ✅ New UI Components
+                  ✅ Enhanced CallStatus Component
                 </h4>
                 <ul className="space-y-1 text-secondary-600 dark:text-secondary-400">
-                  <li>• LoadingSpinner component</li>
-                  <li>• SkeletonLoader components</li>
-                  <li>• ErrorDisplay components</li>
-                  <li>• ErrorBoundary for React errors</li>
-                  <li>• InlineError for compact errors</li>
-                  <li>• Reusable loading patterns</li>
-                  <li>• Consistent error messaging</li>
-                  <li>• Accessible loading states</li>
+                  <li>• Progressive status stages</li>
+                  <li>• Real-time Vapi API sync</li>
+                  <li>• Dynamic duration calculation</li>
+                  <li>• Enhanced visual feedback</li>
+                  <li>• Call details display</li>
+                  <li>• Cost and timing tracking</li>
+                  <li>• Professional progress design</li>
+                  <li>• Responsive layout</li>
                 </ul>
               </div>
             </div>
             <div className="mt-4 p-3 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-700 rounded-lg">
               <p className="text-xs text-success-700 dark:text-success-300">
-                <strong>Status:</strong> Dashboard now includes comprehensive
-                error handling, improved loading states, and retry mechanisms
-                for better user experience.
+                <strong>Status:</strong> Task 5.1 completed! Dashboard now
+                includes real-time call status tracking with progress
+                indicators, live duration counters, and automatic Vapi API
+                synchronization for active calls.
               </p>
             </div>
           </div>

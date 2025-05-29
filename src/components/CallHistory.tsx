@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { SkeletonTable } from '@/components/ui/SkeletonLoader'
 import {
-    Call,
-    CallHistoryFilters,
-    CallStatus,
-    PaginatedResponse,
+  Call,
+  CallHistoryFilters,
+  CallStatus,
+  PaginatedResponse,
 } from '@/types'
 import { useEffect, useMemo, useState } from 'react'
 
