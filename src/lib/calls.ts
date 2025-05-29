@@ -1,9 +1,9 @@
 import type { Call, CallFormData } from '../types'
 import {
-  createCall as createDbCall,
-  getAssistant,
-  getCall,
-  updateCall,
+    createCall as createDbCall,
+    getAssistant,
+    getCall,
+    updateCall,
 } from './database'
 import { retrieveCallTranscript } from './transcripts'
 import { vapi } from './vapi'
@@ -41,6 +41,29 @@ async function getFirstAvailablePhoneNumber(): Promise<string | undefined> {
   } catch (error) {
     console.error('Failed to list phone numbers:', error)
     return undefined
+  }
+}
+
+/**
+ * Generates a contextual first message based on the custom prompt
+ */
+function generateFirstMessage(customPrompt: string): string {
+  const prompt = customPrompt.toLowerCase().trim()
+  
+  if (prompt.includes('schedule') && (prompt.includes('lunch') || prompt.includes('dinner') || prompt.includes('meal'))) {
+    return "Hi there! I'm calling about getting together for a meal. How are you doing?"
+  } else if (prompt.includes('schedule') || prompt.includes('appointment')) {
+    return "Hi! I'm calling to help schedule something for you. How are you doing today?"
+  } else if (prompt.includes('inquire') || prompt.includes('ask about')) {
+    return "Hello! I'm calling to ask about something. Do you have a moment to chat?"
+  } else if (prompt.includes('reservation')) {
+    return "Hi! I'm calling to help with a reservation. How are you today?"
+  } else if (prompt.includes('information') || prompt.includes('details')) {
+    return "Hello! I'm calling to get some information. Do you have a minute to talk?"
+  } else if (prompt.includes('cancel') || prompt.includes('reschedule')) {
+    return "Hi! I'm calling about making a change to something. How are you doing?"
+  } else {
+    return "Hello! I'm calling to help with something. Do you have a moment to talk?"
   }
 }
 
@@ -115,7 +138,7 @@ export async function createOutboundCall(
           provider: 'playht',
           voiceId: 'jennifer',
         },
-        firstMessage: 'Hello! How can I help you today?',
+        firstMessage: generateFirstMessage(data.customPrompt),
       }
     } else {
       throw new Error('Either an assistant ID or custom prompt is required')
