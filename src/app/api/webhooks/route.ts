@@ -1,6 +1,11 @@
 import { updateCallStatus } from '@/lib/calls'
 import { createTranscript, getCallByVapiId } from '@/lib/database'
-import { Call, CreateTranscriptData, VapiWebhookPayload, WebhookEventType } from '@/types'
+import {
+  Call,
+  CreateTranscriptData,
+  VapiWebhookPayload,
+  WebhookEventType,
+} from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
 
 // POST /api/webhooks - Handle Vapi webhook events
@@ -33,7 +38,7 @@ export async function POST(request: NextRequest) {
         break
       default:
         console.warn('Unhandled event type:', message.type)
-        
+
         // Handle call status updates that might come as different event types
         if (message.call?.id && message.call?.status) {
           await handleCallStatusUpdate(message)

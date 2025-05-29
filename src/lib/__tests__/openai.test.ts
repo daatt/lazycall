@@ -48,11 +48,15 @@ describe('OpenAIClient', () => {
         json: async () => mockResponse,
       } as Response)
 
-      const transcript = 'Agent: Hello! Customer: I need to schedule an appointment.'
+      const transcript =
+        'Agent: Hello! Customer: I need to schedule an appointment.'
       const result = await openaiClient.generateCallSummary(transcript)
 
       expect(result.summary).toBe('Customer called to schedule an appointment')
-      expect(result.keyPoints).toEqual(['Appointment scheduled', 'Customer satisfied'])
+      expect(result.keyPoints).toEqual([
+        'Appointment scheduled',
+        'Customer satisfied',
+      ])
       expect(result.outcome).toBe('successful')
       expect(result.confidence).toBe(0.95)
     })
@@ -131,10 +135,15 @@ describe('OpenAIClient', () => {
       const transcript = 'Agent: Hello! Customer: Thank you for your help!'
       const result = await openaiClient.analyzeCall(transcript)
 
-      expect(result.analysis).toBe('Call went well with positive customer interaction')
+      expect(result.analysis).toBe(
+        'Call went well with positive customer interaction'
+      )
       expect(result.sentiment).toBe('positive')
       expect(result.sentimentConfidence).toBe(0.9)
-      expect(result.actionItems).toEqual(['Follow up next week', 'Send confirmation'])
+      expect(result.actionItems).toEqual([
+        'Follow up next week',
+        'Send confirmation',
+      ])
       expect(result.followUpNeeded).toBe(true)
       expect(result.callQuality).toBe('excellent')
     })
@@ -199,8 +208,10 @@ describe('OpenAIClient', () => {
         json: async () => mockResponse,
       } as Response)
 
-      const transcript = 'Agent: Hello! Customer: Thanks for resolving my issue!'
-      const result = await openaiClient.generateComprehensiveAnalysis(transcript)
+      const transcript =
+        'Agent: Hello! Customer: Thanks for resolving my issue!'
+      const result =
+        await openaiClient.generateComprehensiveAnalysis(transcript)
 
       expect(result.summary.summary).toBe('Customer service call')
       expect(result.analysis.sentiment).toBe('positive')
@@ -403,4 +414,4 @@ describe('OpenAIClient', () => {
       expect(result.callQuality).toBe('fair') // Should default invalid values
     })
   })
-}) 
+})

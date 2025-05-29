@@ -1,12 +1,12 @@
 import { getTranscript, getTranscripts } from '@/lib/database'
 import {
-    extractTranscriptMetrics,
-    generateAiAnalysisForTranscript,
-    generateAnalysisForTranscript,
-    generateSummaryForTranscript,
-    processPendingTranscripts,
-    retrieveCallTranscript,
-    validateTranscriptContent,
+  extractTranscriptMetrics,
+  generateAiAnalysisForTranscript,
+  generateAnalysisForTranscript,
+  generateSummaryForTranscript,
+  processPendingTranscripts,
+  retrieveCallTranscript,
+  validateTranscriptContent,
 } from '@/lib/transcripts'
 import type { ApiResponse, Transcript, TranscriptFilters } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
@@ -15,10 +15,11 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    
+
     const filters: TranscriptFilters = {
       callId: searchParams.get('callId') || undefined,
-      processingStatus: searchParams.get('processingStatus') as any || undefined,
+      processingStatus:
+        (searchParams.get('processingStatus') as any) || undefined,
       language: searchParams.get('language') || undefined,
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '10'),
@@ -61,18 +62,24 @@ export async function POST(request: NextRequest) {
       case 'retrieve':
         if (!callId) {
           return NextResponse.json(
-            { success: false, error: 'Call ID is required for retrieve action' },
+            {
+              success: false,
+              error: 'Call ID is required for retrieve action',
+            },
             { status: 400 }
           )
         }
 
-        const transcript = await retrieveCallTranscript(callId, includeAiAnalysis !== false)
-        
+        const transcript = await retrieveCallTranscript(
+          callId,
+          includeAiAnalysis !== false
+        )
+
         const response: ApiResponse<Transcript> = {
           success: true,
           data: transcript || undefined,
-          message: transcript 
-            ? 'Transcript retrieved successfully' 
+          message: transcript
+            ? 'Transcript retrieved successfully'
             : 'No transcript available for this call',
         }
 
@@ -80,7 +87,7 @@ export async function POST(request: NextRequest) {
 
       case 'process-pending':
         const processingResult = await processPendingTranscripts()
-        
+
         const processResponse: ApiResponse<typeof processingResult> = {
           success: true,
           data: processingResult,
@@ -92,7 +99,10 @@ export async function POST(request: NextRequest) {
       case 'validate':
         if (!transcriptId) {
           return NextResponse.json(
-            { success: false, error: 'Transcript ID is required for validate action' },
+            {
+              success: false,
+              error: 'Transcript ID is required for validate action',
+            },
             { status: 400 }
           )
         }
@@ -105,7 +115,9 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        const validation = validateTranscriptContent(transcriptToValidate.content)
+        const validation = validateTranscriptContent(
+          transcriptToValidate.content
+        )
         const metrics = extractTranscriptMetrics(transcriptToValidate.content)
 
         const validationResponse: ApiResponse<{
@@ -124,13 +136,16 @@ export async function POST(request: NextRequest) {
       case 'generate-summary':
         if (!transcriptId) {
           return NextResponse.json(
-            { success: false, error: 'Transcript ID is required for summary generation' },
+            {
+              success: false,
+              error: 'Transcript ID is required for summary generation',
+            },
             { status: 400 }
           )
         }
 
         const summaryResult = await generateSummaryForTranscript(transcriptId)
-        
+
         const summaryResponse: ApiResponse<typeof summaryResult> = {
           success: true,
           data: summaryResult,
@@ -142,13 +157,16 @@ export async function POST(request: NextRequest) {
       case 'generate-analysis':
         if (!transcriptId) {
           return NextResponse.json(
-            { success: false, error: 'Transcript ID is required for analysis generation' },
+            {
+              success: false,
+              error: 'Transcript ID is required for analysis generation',
+            },
             { status: 400 }
           )
         }
 
         const analysisResult = await generateAnalysisForTranscript(transcriptId)
-        
+
         const analysisResponse: ApiResponse<typeof analysisResult> = {
           success: true,
           data: analysisResult,
@@ -160,13 +178,17 @@ export async function POST(request: NextRequest) {
       case 'generate-ai-analysis':
         if (!transcriptId) {
           return NextResponse.json(
-            { success: false, error: 'Transcript ID is required for AI analysis generation' },
+            {
+              success: false,
+              error: 'Transcript ID is required for AI analysis generation',
+            },
             { status: 400 }
           )
         }
 
-        const aiAnalysisResult = await generateAiAnalysisForTranscript(transcriptId)
-        
+        const aiAnalysisResult =
+          await generateAiAnalysisForTranscript(transcriptId)
+
         const aiAnalysisResponse: ApiResponse<Transcript> = {
           success: true,
           data: aiAnalysisResult,
@@ -188,4 +210,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-} 
+}

@@ -1,14 +1,14 @@
 import * as database from '../database'
 import * as openai from '../openai'
 import {
-    extractTranscriptMetrics,
-    generateAiAnalysisForTranscript,
-    generateAnalysisForTranscript,
-    generateSummaryForTranscript,
-    processPendingTranscripts,
-    processTranscript,
-    retrieveCallTranscript,
-    validateTranscriptContent,
+  extractTranscriptMetrics,
+  generateAiAnalysisForTranscript,
+  generateAnalysisForTranscript,
+  generateSummaryForTranscript,
+  processPendingTranscripts,
+  processTranscript,
+  retrieveCallTranscript,
+  validateTranscriptContent,
 } from '../transcripts'
 import { vapi } from '../vapi'
 
@@ -30,7 +30,8 @@ describe('Transcript Processing with AI', () => {
   const mockTranscript = {
     id: 'transcript-123',
     callId: 'call-123',
-    content: 'Agent: Hello, how can I help you today?\nUser: I need help with my account.',
+    content:
+      'Agent: Hello, how can I help you today?\nUser: I need help with my account.',
     processingStatus: 'pending' as const,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -67,7 +68,9 @@ describe('Transcript Processing with AI', () => {
     ;(vapi.getCallTranscript as jest.Mock).mockResolvedValue(
       'Agent: Hello, how can I help you today?\nUser: I need help with my account.'
     )
-    ;(openai.openai.generateComprehensiveAnalysis as jest.Mock).mockResolvedValue({
+    ;(
+      openai.openai.generateComprehensiveAnalysis as jest.Mock
+    ).mockResolvedValue({
       summary: mockAiSummary,
       analysis: mockAiAnalysis,
     })
@@ -84,7 +87,8 @@ describe('Transcript Processing with AI', () => {
       )
       expect(database.createTranscript).toHaveBeenCalledWith({
         callId: 'call-123',
-        content: 'Agent: Hello, how can I help you today?\nUser: I need help with my account.',
+        content:
+          'Agent: Hello, how can I help you today?\nUser: I need help with my account.',
       })
       expect(result?.summary).toBe(mockAiSummary.summary)
       expect(result?.analysis).toContain(mockAiAnalysis.analysis)
@@ -98,9 +102,9 @@ describe('Transcript Processing with AI', () => {
     })
 
     it('should handle AI analysis failure gracefully', async () => {
-      ;(openai.openai.generateComprehensiveAnalysis as jest.Mock).mockRejectedValue(
-        new Error('AI service unavailable')
-      )
+      ;(
+        openai.openai.generateComprehensiveAnalysis as jest.Mock
+      ).mockRejectedValue(new Error('AI service unavailable'))
 
       const result = await retrieveCallTranscript('call-123', true)
 
@@ -130,11 +134,15 @@ describe('Transcript Processing with AI', () => {
 
   describe('AI analysis functions', () => {
     it('should generate AI analysis for existing transcript', async () => {
-      ;(database.getTranscriptByCallId as jest.Mock).mockResolvedValue(mockTranscript)
+      ;(database.getTranscriptByCallId as jest.Mock).mockResolvedValue(
+        mockTranscript
+      )
 
       const result = await generateAiAnalysisForTranscript('transcript-123')
 
-      expect(database.getTranscriptByCallId).toHaveBeenCalledWith('transcript-123')
+      expect(database.getTranscriptByCallId).toHaveBeenCalledWith(
+        'transcript-123'
+      )
       expect(openai.openai.generateComprehensiveAnalysis).toHaveBeenCalledWith(
         mockTranscript.content
       )
@@ -142,31 +150,43 @@ describe('Transcript Processing with AI', () => {
     })
 
     it('should generate summary for transcript', async () => {
-      ;(database.getTranscriptByCallId as jest.Mock).mockResolvedValue(mockTranscript)
-      ;(openai.openai.generateCallSummary as jest.Mock).mockResolvedValue(mockAiSummary)
+      ;(database.getTranscriptByCallId as jest.Mock).mockResolvedValue(
+        mockTranscript
+      )
+      ;(openai.openai.generateCallSummary as jest.Mock).mockResolvedValue(
+        mockAiSummary
+      )
 
       const result = await generateSummaryForTranscript('transcript-123')
 
-      expect(openai.openai.generateCallSummary).toHaveBeenCalledWith(mockTranscript.content)
+      expect(openai.openai.generateCallSummary).toHaveBeenCalledWith(
+        mockTranscript.content
+      )
       expect(result).toEqual(mockAiSummary)
     })
 
     it('should generate analysis for transcript', async () => {
-      ;(database.getTranscriptByCallId as jest.Mock).mockResolvedValue(mockTranscript)
-      ;(openai.openai.analyzeCall as jest.Mock).mockResolvedValue(mockAiAnalysis)
+      ;(database.getTranscriptByCallId as jest.Mock).mockResolvedValue(
+        mockTranscript
+      )
+      ;(openai.openai.analyzeCall as jest.Mock).mockResolvedValue(
+        mockAiAnalysis
+      )
 
       const result = await generateAnalysisForTranscript('transcript-123')
 
-      expect(openai.openai.analyzeCall).toHaveBeenCalledWith(mockTranscript.content)
+      expect(openai.openai.analyzeCall).toHaveBeenCalledWith(
+        mockTranscript.content
+      )
       expect(result).toEqual(mockAiAnalysis)
     })
 
     it('should handle missing transcript for AI analysis', async () => {
       ;(database.getTranscriptByCallId as jest.Mock).mockResolvedValue(null)
 
-      await expect(generateAiAnalysisForTranscript('transcript-123')).rejects.toThrow(
-        'Transcript not found'
-      )
+      await expect(
+        generateAiAnalysisForTranscript('transcript-123')
+      ).rejects.toThrow('Transcript not found')
     })
 
     it('should handle empty transcript content', async () => {
@@ -175,9 +195,9 @@ describe('Transcript Processing with AI', () => {
         content: '',
       })
 
-      await expect(generateAiAnalysisForTranscript('transcript-123')).rejects.toThrow(
-        'Transcript has no content to analyze'
-      )
+      await expect(
+        generateAiAnalysisForTranscript('transcript-123')
+      ).rejects.toThrow('Transcript has no content to analyze')
     })
   })
 
@@ -196,7 +216,9 @@ describe('Transcript Processing with AI', () => {
       expect(result.processed).toBe(2)
       expect(result.failed).toBe(0)
       expect(result.errors).toHaveLength(0)
-      expect(openai.openai.generateComprehensiveAnalysis).toHaveBeenCalledTimes(2)
+      expect(openai.openai.generateComprehensiveAnalysis).toHaveBeenCalledTimes(
+        2
+      )
     })
 
     it('should handle AI processing errors in batch', async () => {
@@ -204,9 +226,9 @@ describe('Transcript Processing with AI', () => {
       ;(database.getPendingTranscripts as jest.Mock).mockResolvedValue(
         pendingTranscripts
       )
-      ;(openai.openai.generateComprehensiveAnalysis as jest.Mock).mockRejectedValue(
-        new Error('AI service error')
-      )
+      ;(
+        openai.openai.generateComprehensiveAnalysis as jest.Mock
+      ).mockRejectedValue(new Error('AI service error'))
 
       const result = await processPendingTranscripts()
 
@@ -219,7 +241,10 @@ describe('Transcript Processing with AI', () => {
   describe('processTranscript with AI', () => {
     it('should process transcript with AI metadata', async () => {
       ;(database.updateTranscriptProcessing as jest.Mock)
-        .mockResolvedValueOnce({ ...mockTranscript, processingStatus: 'processing' })
+        .mockResolvedValueOnce({
+          ...mockTranscript,
+          processingStatus: 'processing',
+        })
         .mockResolvedValueOnce({
           ...mockTranscript,
           processingStatus: 'completed',
@@ -257,11 +282,14 @@ describe('Transcript Processing with AI', () => {
     })
 
     it('should handle AI processing errors with fallback', async () => {
-      ;(openai.openai.generateComprehensiveAnalysis as jest.Mock).mockRejectedValue(
-        new Error('AI processing failed')
-      )
+      ;(
+        openai.openai.generateComprehensiveAnalysis as jest.Mock
+      ).mockRejectedValue(new Error('AI processing failed'))
       ;(database.updateTranscriptProcessing as jest.Mock)
-        .mockResolvedValueOnce({ ...mockTranscript, processingStatus: 'processing' })
+        .mockResolvedValueOnce({
+          ...mockTranscript,
+          processingStatus: 'processing',
+        })
         .mockResolvedValueOnce({
           ...mockTranscript,
           processingStatus: 'completed',
@@ -288,7 +316,8 @@ describe('Transcript Processing with AI', () => {
 
   describe('validateTranscriptContent', () => {
     it('should validate valid transcript content', () => {
-      const content = 'Agent: Hello, how can I help you?\nUser: I need assistance.'
+      const content =
+        'Agent: Hello, how can I help you?\nUser: I need assistance.'
       const result = validateTranscriptContent(content)
 
       expect(result.isValid).toBe(true)
@@ -310,7 +339,9 @@ describe('Transcript Processing with AI', () => {
     })
 
     it('should warn about incomplete content', () => {
-      const result = validateTranscriptContent('Agent: Hello [inaudible] help you?')
+      const result = validateTranscriptContent(
+        'Agent: Hello [inaudible] help you?'
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.warnings).toContain(
@@ -354,4 +385,4 @@ Agent: I can help you with that. Let me check your account.`
       expect(result.duration).toBe(null)
     })
   })
-}) 
+})

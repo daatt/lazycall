@@ -260,4 +260,4 @@ describe('VapiClient', () => {
       expect(result).toBe(false)
     })
   })
-}) 
+})

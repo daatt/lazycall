@@ -86,7 +86,8 @@ export class CircuitBreaker {
   private shouldAttemptReset(): boolean {
     return !!(
       this.lastFailureTime &&
-      Date.now() - this.lastFailureTime.getTime() > this.config.recoveryTimeoutMs
+      Date.now() - this.lastFailureTime.getTime() >
+        this.config.recoveryTimeoutMs
     )
   }
 
@@ -144,13 +145,15 @@ export class RateLimiter {
     if (this.requests.length > this.config.requestsPerSecond) {
       const oldestRequest = this.requests[0]
       const waitTime = 1000 - (now - oldestRequest)
-      
+
       if (waitTime > 0) {
         await new Promise(resolve => setTimeout(resolve, waitTime))
         // Re-check after waiting
         const newNow = Date.now()
         const newWindowStart = newNow - 1000
-        this.requests = this.requests.filter(timestamp => timestamp > newWindowStart)
+        this.requests = this.requests.filter(
+          timestamp => timestamp > newWindowStart
+        )
       }
     }
   }
@@ -175,9 +178,13 @@ export class ApiErrorHandler {
     const finalConfig = { ...this.config.retry, ...customConfig }
     const circuitBreaker = this.getCircuitBreaker(serviceKey)
     const rateLimiter = this.getRateLimiter(serviceKey)
-    
-    let lastError: ApiError = this.createApiError('Unknown error', serviceKey, operationName)
-    
+
+    let lastError: ApiError = this.createApiError(
+      'Unknown error',
+      serviceKey,
+      operationName
+    )
+
     for (let attempt = 0; attempt <= finalConfig.maxRetries; attempt++) {
       try {
         // Check rate limiting
@@ -190,14 +197,21 @@ export class ApiErrorHandler {
 
         // Update metrics
         this.updateMetrics(serviceKey, true, responseTime)
-        
+
         if (this.config.logErrors && attempt > 0) {
-          console.log(`✅ ${serviceKey}.${operationName} succeeded after ${attempt} retries`)
+          console.log(
+            `✅ ${serviceKey}.${operationName} succeeded after ${attempt} retries`
+          )
         }
 
         return result
       } catch (error) {
-        const apiError = this.enhanceError(error, serviceKey, operationName, attempt)
+        const apiError = this.enhanceError(
+          error,
+          serviceKey,
+          operationName,
+          attempt
+        )
         lastError = apiError
 
         // Update metrics
@@ -205,7 +219,10 @@ export class ApiErrorHandler {
 
         // Log error
         if (this.config.logErrors) {
-          console.warn(`❌ ${serviceKey}.${operationName} failed (attempt ${attempt + 1}/${finalConfig.maxRetries + 1}):`, apiError.message)
+          console.warn(
+            `❌ ${serviceKey}.${operationName} failed (attempt ${attempt + 1}/${finalConfig.maxRetries + 1}):`,
+            apiError.message
+          )
         }
 
         // Don't retry if not retryable or on last attempt
@@ -241,7 +258,7 @@ export class ApiErrorHandler {
           controller.signal.addEventListener('abort', () => {
             reject(new Error(`${operationName} timed out after ${timeoutMs}ms`))
           })
-        })
+        }),
       ])
 
       clearTimeout(timeoutId)
@@ -273,11 +290,11 @@ export class ApiErrorHandler {
     const { concurrency = 5, failFast = false, collectErrors = true } = options
     const results: T[] = []
     const errors: ApiError[] = []
-    
+
     // Execute operations in batches
     for (let i = 0; i < operations.length; i += concurrency) {
       const batch = operations.slice(i, i + concurrency)
-      
+
       const batchPromises = batch.map(async (operation, index) => {
         try {
           const result = await this.executeWithRetry(
@@ -294,7 +311,7 @@ export class ApiErrorHandler {
       })
 
       const batchResults = await Promise.all(batchPromises)
-      
+
       for (const batchResult of batchResults) {
         if (batchResult.success) {
           results.push(batchResult.result!)
@@ -340,19 +357,23 @@ export class ApiErrorHandler {
   /**
    * Health check for all services
    */
-  getHealthStatus(): Record<string, {
-    status: 'healthy' | 'degraded' | 'unhealthy'
-    circuitBreakerState: CircuitBreakerState
-    successRate: number
-    lastError?: string
-  }> {
+  getHealthStatus(): Record<
+    string,
+    {
+      status: 'healthy' | 'degraded' | 'unhealthy'
+      circuitBreakerState: CircuitBreakerState
+      successRate: number
+      lastError?: string
+    }
+  > {
     const health: Record<string, any> = {}
-    
+
     this.metrics.forEach((metrics, serviceKey) => {
       const circuitBreaker = this.circuitBreakers.get(serviceKey)
-      const successRate = metrics.totalRequests > 0 
-        ? metrics.successfulRequests / metrics.totalRequests 
-        : 1
+      const successRate =
+        metrics.totalRequests > 0
+          ? metrics.successfulRequests / metrics.totalRequests
+          : 1
 
       let status: 'healthy' | 'degraded' | 'unhealthy'
       if (circuitBreaker?.getState() === CircuitBreakerState.OPEN) {
@@ -365,7 +386,8 @@ export class ApiErrorHandler {
 
       health[serviceKey] = {
         status,
-        circuitBreakerState: circuitBreaker?.getState() || CircuitBreakerState.CLOSED,
+        circuitBreakerState:
+          circuitBreaker?.getState() || CircuitBreakerState.CLOSED,
         successRate,
         lastError: metrics.lastError?.message,
       }
@@ -378,7 +400,10 @@ export class ApiErrorHandler {
 
   private getCircuitBreaker(serviceKey: string): CircuitBreaker {
     if (!this.circuitBreakers.has(serviceKey)) {
-      this.circuitBreakers.set(serviceKey, new CircuitBreaker(this.config.circuitBreaker))
+      this.circuitBreakers.set(
+        serviceKey,
+        new CircuitBreaker(this.config.circuitBreaker)
+      )
     }
     return this.circuitBreakers.get(serviceKey)!
   }
@@ -415,10 +440,13 @@ export class ApiErrorHandler {
     if (success) {
       metrics.successfulRequests++
       metrics.lastSuccess = new Date()
-      
+
       // Update average response time
-      const totalResponseTime = metrics.averageResponseTime * (metrics.successfulRequests - 1) + responseTime
-      metrics.averageResponseTime = totalResponseTime / metrics.successfulRequests
+      const totalResponseTime =
+        metrics.averageResponseTime * (metrics.successfulRequests - 1) +
+        responseTime
+      metrics.averageResponseTime =
+        totalResponseTime / metrics.successfulRequests
     } else {
       metrics.failedRequests++
       if (error) {
@@ -433,12 +461,15 @@ export class ApiErrorHandler {
     operation: string,
     attempt?: number
   ): ApiError {
-    const apiError = error instanceof Error ? error as ApiError : new Error(String(error)) as ApiError
-    
+    const apiError =
+      error instanceof Error
+        ? (error as ApiError)
+        : (new Error(String(error)) as ApiError)
+
     apiError.service = service
     apiError.operation = operation
     apiError.timestamp = new Date()
-    
+
     if (attempt !== undefined) {
       apiError.message = `${apiError.message} (attempt ${attempt + 1})`
     }
@@ -449,7 +480,11 @@ export class ApiErrorHandler {
     return apiError
   }
 
-  private createApiError(message: string, service: string, operation: string): ApiError {
+  private createApiError(
+    message: string,
+    service: string,
+    operation: string
+  ): ApiError {
     const error = new Error(message) as ApiError
     error.service = service
     error.operation = operation
@@ -586,4 +621,6 @@ export const DEFAULT_CONFIGS = {
 // Global error handler instances
 export const vapiErrorHandler = new ApiErrorHandler(DEFAULT_CONFIGS.vapi)
 export const openaiErrorHandler = new ApiErrorHandler(DEFAULT_CONFIGS.openai)
-export const databaseErrorHandler = new ApiErrorHandler(DEFAULT_CONFIGS.database) 
+export const databaseErrorHandler = new ApiErrorHandler(
+  DEFAULT_CONFIGS.database
+)

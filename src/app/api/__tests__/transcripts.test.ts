@@ -209,4 +209,4 @@ describe('Transcripts API', () => {
       expect(response.status).toBe(400)
     })
   })
-}) 
+})

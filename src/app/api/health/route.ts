@@ -1,4 +1,8 @@
-import { databaseErrorHandler, openaiErrorHandler, vapiErrorHandler } from '@/lib/error-handling'
+import {
+  databaseErrorHandler,
+  openaiErrorHandler,
+  vapiErrorHandler,
+} from '@/lib/error-handling'
 import type { ApiResponse } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -53,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     // Return overall system health
     const overallStatus = determineOverallStatus(allHealth)
-    
+
     let systemMetrics = undefined
     if (detailed) {
       systemMetrics = {
@@ -118,15 +122,15 @@ export async function POST(request: NextRequest) {
         } else {
           // Reset all metrics
           vapiErrorHandler.getAllMetrics()
-          Object.keys(vapiErrorHandler.getAllMetrics()).forEach(key => 
+          Object.keys(vapiErrorHandler.getAllMetrics()).forEach(key =>
             vapiErrorHandler.resetMetrics(key)
           )
-          
-          Object.keys(openaiErrorHandler.getAllMetrics()).forEach(key => 
+
+          Object.keys(openaiErrorHandler.getAllMetrics()).forEach(key =>
             openaiErrorHandler.resetMetrics(key)
           )
-          
-          Object.keys(databaseErrorHandler.getAllMetrics()).forEach(key => 
+
+          Object.keys(databaseErrorHandler.getAllMetrics()).forEach(key =>
             databaseErrorHandler.resetMetrics(key)
           )
 
@@ -151,7 +155,7 @@ export async function POST(request: NextRequest) {
       case 'health-check':
         // Perform active health checks
         const healthChecks = await performActiveHealthChecks()
-        
+
         return NextResponse.json({
           success: true,
           data: healthChecks,
@@ -174,17 +178,19 @@ export async function POST(request: NextRequest) {
 
 // Helper functions
 
-function determineOverallStatus(health: Record<string, any>): 'healthy' | 'degraded' | 'unhealthy' {
+function determineOverallStatus(
+  health: Record<string, any>
+): 'healthy' | 'degraded' | 'unhealthy' {
   const statuses = Object.values(health).map((h: any) => h.status)
-  
+
   if (statuses.some(status => status === 'unhealthy')) {
     return 'unhealthy'
   }
-  
+
   if (statuses.some(status => status === 'degraded')) {
     return 'degraded'
   }
-  
+
   return 'healthy'
 }
 
@@ -211,7 +217,7 @@ async function performActiveHealthChecks(): Promise<{
         const response = await fetch('https://api.vapi.ai/assistant', {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${process.env.VAPI_API_KEY}`,
+            Authorization: `Bearer ${process.env.VAPI_API_KEY}`,
           },
         })
         if (!response.ok && response.status !== 401) {
@@ -225,7 +231,8 @@ async function performActiveHealthChecks(): Promise<{
     results.vapi.available = true
     results.vapi.responseTime = Date.now() - startTime
   } catch (error) {
-    results.vapi.error = error instanceof Error ? error.message : 'Unknown error'
+    results.vapi.error =
+      error instanceof Error ? error.message : 'Unknown error'
   }
 
   // Test OpenAI API connectivity
@@ -236,7 +243,7 @@ async function performActiveHealthChecks(): Promise<{
         const response = await fetch('https://api.openai.com/v1/models', {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
           },
         })
         if (!response.ok && response.status !== 401) {
@@ -250,7 +257,8 @@ async function performActiveHealthChecks(): Promise<{
     results.openai.available = true
     results.openai.responseTime = Date.now() - startTime
   } catch (error) {
-    results.openai.error = error instanceof Error ? error.message : 'Unknown error'
+    results.openai.error =
+      error instanceof Error ? error.message : 'Unknown error'
   }
 
   // Test database connectivity
@@ -271,8 +279,9 @@ async function performActiveHealthChecks(): Promise<{
     results.database.available = true
     results.database.responseTime = Date.now() - startTime
   } catch (error) {
-    results.database.error = error instanceof Error ? error.message : 'Unknown error'
+    results.database.error =
+      error instanceof Error ? error.message : 'Unknown error'
   }
 
   return results
-} 
+}

@@ -1,4 +1,7 @@
-import { createAssistantWithSystemPrompt, updateAssistantSystemPrompt } from '../assistants'
+import {
+  createAssistantWithSystemPrompt,
+  updateAssistantSystemPrompt,
+} from '../assistants'
 import * as database from '../database'
 import { vapi } from '../vapi'
 
@@ -137,14 +140,11 @@ describe('Assistant Creation', () => {
     )
 
     // Verify database call
-    expect(database.updateAssistant).toHaveBeenCalledWith(
-      mockDbAssistant.id,
-      {
-        systemPrompt: newSystemPrompt,
-      }
-    )
+    expect(database.updateAssistant).toHaveBeenCalledWith(mockDbAssistant.id, {
+      systemPrompt: newSystemPrompt,
+    })
 
     // Verify result
     expect(result.systemPrompt).toBe(newSystemPrompt)
   })
-}) 
+})

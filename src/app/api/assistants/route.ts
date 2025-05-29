@@ -1,17 +1,56 @@
 import { createAssistantWithSystemPrompt } from '@/lib/assistants'
-import type { AssistantFormData } from '@/types'
-import { ApiResponse, Assistant } from '@/types'
+import { getAssistants } from '@/lib/database'
+import type {
+  ApiResponse,
+  Assistant,
+  AssistantFilters,
+  AssistantFormData,
+  PaginatedResponse,
+} from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/assistants - Retrieve all assistants
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    // TODO: Implement assistants retrieval
-    // This will be implemented in task 4.6
+    const { searchParams } = new URL(request.url)
 
-    const response: ApiResponse<Assistant[]> = {
+    // Parse query parameters
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '50')
+    const isActiveStr = searchParams.get('isActive')
+    const language = searchParams.get('language') || undefined
+    const model = searchParams.get('model') || undefined
+    const tagsStr = searchParams.get('tags')
+
+    // Parse boolean and array parameters
+    const isActive = isActiveStr ? isActiveStr === 'true' : undefined
+    const tags = tagsStr
+      ? tagsStr.split(',').filter(tag => tag.trim())
+      : undefined
+
+    const filters: AssistantFilters = {
+      page,
+      limit,
+      isActive,
+      language,
+      model,
+      tags,
+    }
+
+    const result = await getAssistants(filters)
+    const totalPages = Math.ceil(result.total / limit)
+
+    const paginatedResponse: PaginatedResponse<Assistant> = {
+      data: result.assistants,
+      page,
+      limit,
+      total: result.total,
+      totalPages,
+    }
+
+    const response: ApiResponse<PaginatedResponse<Assistant>> = {
       success: true,
-      data: [],
+      data: paginatedResponse,
       message: 'Assistants retrieved successfully',
     }
 
@@ -28,7 +67,7 @@ export async function GET(_request: NextRequest) {
 // POST /api/assistants - Create a new assistant
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as AssistantFormData
+    const body = (await request.json()) as AssistantFormData
 
     // Validate required fields
     if (!body.name || !body.systemPrompt) {

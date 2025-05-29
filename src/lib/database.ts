@@ -359,7 +359,9 @@ export async function getCall(id: string): Promise<Call | null> {
   }
 }
 
-export async function getCallByVapiId(vapiCallId: string): Promise<Call | null> {
+export async function getCallByVapiId(
+  vapiCallId: string
+): Promise<Call | null> {
   try {
     const call = await prisma.call.findFirst({
       where: { vapiCallId },

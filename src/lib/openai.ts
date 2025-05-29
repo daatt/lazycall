@@ -42,9 +42,11 @@ export class OpenAIClient {
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || env.OPENAI_API_KEY || ''
-    
+
     if (!this.apiKey) {
-      throw new Error('OpenAI API key is required. Set OPENAI_API_KEY environment variable.')
+      throw new Error(
+        'OpenAI API key is required. Set OPENAI_API_KEY environment variable.'
+      )
     }
   }
 
@@ -61,23 +63,25 @@ export class OpenAIClient {
       }
 
       const prompt = this.buildSummaryPrompt(transcript)
-      
+
       const response = await openaiErrorHandler.executeWithRetry(
-        () => this.makeRequest({
-          model: this.defaultModel,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a professional call analysis assistant. Generate concise, accurate summaries of phone call transcripts. Focus on key outcomes, decisions made, and important information exchanged.',
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          temperature: options?.temperature ?? 0.3,
-          max_tokens: options?.maxTokens ?? 500,
-        }),
+        () =>
+          this.makeRequest({
+            model: this.defaultModel,
+            messages: [
+              {
+                role: 'system',
+                content:
+                  'You are a professional call analysis assistant. Generate concise, accurate summaries of phone call transcripts. Focus on key outcomes, decisions made, and important information exchanged.',
+              },
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+            temperature: options?.temperature ?? 0.3,
+            max_tokens: options?.maxTokens ?? 500,
+          }),
         'openai',
         'generateCallSummary',
         {
@@ -106,23 +110,25 @@ export class OpenAIClient {
       }
 
       const prompt = this.buildAnalysisPrompt(transcript)
-      
+
       const response = await openaiErrorHandler.executeWithRetry(
-        () => this.makeRequest({
-          model: this.defaultModel,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert call analysis specialist. Analyze phone call transcripts for sentiment, quality, action items, and provide strategic insights. Be objective and thorough in your analysis.',
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          temperature: options?.temperature ?? 0.4,
-          max_tokens: options?.maxTokens ?? 800,
-        }),
+        () =>
+          this.makeRequest({
+            model: this.defaultModel,
+            messages: [
+              {
+                role: 'system',
+                content:
+                  'You are an expert call analysis specialist. Analyze phone call transcripts for sentiment, quality, action items, and provide strategic insights. Be objective and thorough in your analysis.',
+              },
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+            temperature: options?.temperature ?? 0.4,
+            max_tokens: options?.maxTokens ?? 800,
+          }),
         'openai',
         'analyzeCall',
         {
@@ -154,23 +160,25 @@ export class OpenAIClient {
       }
 
       const prompt = this.buildComprehensivePrompt(transcript)
-      
+
       const response = await openaiErrorHandler.executeWithRetry(
-        () => this.makeRequest({
-          model: this.defaultModel,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a professional call analysis expert. Analyze phone call transcripts and provide both a summary and detailed analysis. Return your response in a structured JSON format.',
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          temperature: options?.temperature ?? 0.3,
-          max_tokens: options?.maxTokens ?? 1200,
-        }),
+        () =>
+          this.makeRequest({
+            model: this.defaultModel,
+            messages: [
+              {
+                role: 'system',
+                content:
+                  'You are a professional call analysis expert. Analyze phone call transcripts and provide both a summary and detailed analysis. Return your response in a structured JSON format.',
+              },
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+            temperature: options?.temperature ?? 0.3,
+            max_tokens: options?.maxTokens ?? 1200,
+          }),
         'openai',
         'generateComprehensiveAnalysis',
         {
@@ -179,7 +187,9 @@ export class OpenAIClient {
         }
       )
 
-      return this.parseComprehensiveResponse(response.choices[0].message.content)
+      return this.parseComprehensiveResponse(
+        response.choices[0].message.content
+      )
     } catch (error) {
       console.error('Failed to generate comprehensive analysis:', error)
       throw this.handleError(error, 'Failed to generate comprehensive analysis')
@@ -199,21 +209,23 @@ export class OpenAIClient {
 ${transcript}`
 
       const response = await openaiErrorHandler.executeWithRetry(
-        () => this.makeRequest({
-          model: this.defaultModel,
-          messages: [
-            {
-              role: 'system',
-              content: 'You extract key points from call transcripts. Return only the most important points in a clear, bulleted format.',
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          temperature: options?.temperature ?? 0.2,
-          max_tokens: options?.maxTokens ?? 300,
-        }),
+        () =>
+          this.makeRequest({
+            model: this.defaultModel,
+            messages: [
+              {
+                role: 'system',
+                content:
+                  'You extract key points from call transcripts. Return only the most important points in a clear, bulleted format.',
+              },
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+            temperature: options?.temperature ?? 0.2,
+            max_tokens: options?.maxTokens ?? 300,
+          }),
         'openai',
         'extractKeyPoints',
         {
@@ -314,8 +326,12 @@ ${transcript}`
       return {
         analysis: parsed.analysis || 'Analysis not available',
         sentiment: this.validateSentiment(parsed.sentiment),
-        sentimentConfidence: this.validateConfidence(parsed.sentimentConfidence),
-        actionItems: Array.isArray(parsed.actionItems) ? parsed.actionItems : [],
+        sentimentConfidence: this.validateConfidence(
+          parsed.sentimentConfidence
+        ),
+        actionItems: Array.isArray(parsed.actionItems)
+          ? parsed.actionItems
+          : [],
         followUpNeeded: Boolean(parsed.followUpNeeded),
         callQuality: this.validateCallQuality(parsed.callQuality),
         reasoning: parsed.reasoning || 'No reasoning provided',
@@ -358,16 +374,20 @@ ${transcript}`
     // Extract bullet points from text
     const lines = content.split('\n')
     const keyPoints: string[] = []
-    
+
     for (const line of lines) {
       const trimmed = line.trim()
-      if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
+      if (
+        trimmed.startsWith('•') ||
+        trimmed.startsWith('-') ||
+        trimmed.startsWith('*')
+      ) {
         keyPoints.push(trimmed.substring(1).trim())
       } else if (trimmed.match(/^\d+\./)) {
         keyPoints.push(trimmed.replace(/^\d+\./, '').trim())
       }
     }
-    
+
     return keyPoints.slice(0, 5) // Limit to 5 key points
   }
 
@@ -377,19 +397,25 @@ ${transcript}`
     return sentences.slice(0, 3).map(s => s.trim())
   }
 
-  private validateOutcome(outcome: string): 'successful' | 'failed' | 'partial' | 'unknown' {
+  private validateOutcome(
+    outcome: string
+  ): 'successful' | 'failed' | 'partial' | 'unknown' {
     const validOutcomes = ['successful', 'failed', 'partial', 'unknown']
-    return validOutcomes.includes(outcome) ? outcome as any : 'unknown'
+    return validOutcomes.includes(outcome) ? (outcome as any) : 'unknown'
   }
 
-  private validateSentiment(sentiment: string): 'positive' | 'negative' | 'neutral' {
+  private validateSentiment(
+    sentiment: string
+  ): 'positive' | 'negative' | 'neutral' {
     const validSentiments = ['positive', 'negative', 'neutral']
-    return validSentiments.includes(sentiment) ? sentiment as any : 'neutral'
+    return validSentiments.includes(sentiment) ? (sentiment as any) : 'neutral'
   }
 
-  private validateCallQuality(quality: string): 'excellent' | 'good' | 'fair' | 'poor' {
+  private validateCallQuality(
+    quality: string
+  ): 'excellent' | 'good' | 'fair' | 'poor' {
     const validQualities = ['excellent', 'good', 'fair', 'poor']
-    return validQualities.includes(quality) ? quality as any : 'fair'
+    return validQualities.includes(quality) ? (quality as any) : 'fair'
   }
 
   private validateConfidence(confidence: number): number {
@@ -397,13 +423,11 @@ ${transcript}`
     return Math.max(0, Math.min(1, confidence))
   }
 
-  private async makeRequest(
-    data: Record<string, unknown>
-  ): Promise<any> {
+  private async makeRequest(data: Record<string, unknown>): Promise<any> {
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
@@ -433,7 +457,7 @@ ${transcript}`
         details: openaiError.details,
       }
     }
-    
+
     return {
       message: `${message}: Unknown error`,
       details: error,

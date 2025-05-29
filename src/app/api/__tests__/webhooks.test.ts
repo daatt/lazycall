@@ -173,4 +173,4 @@ describe('Webhook Handler', () => {
     expect(data.success).toBe(true)
     expect(data.message).toBe('Webhook endpoint is active')
   })
-}) 
+})

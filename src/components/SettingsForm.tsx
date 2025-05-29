@@ -138,6 +138,9 @@ export function SettingsForm({
           <div>
             <label htmlFor="systemPrompt" className="label">
               System Prompt *
+              <span className="text-xs text-secondary-500 dark:text-secondary-400 font-normal ml-1">
+                (Defines your AI agent&apos;s behavior and personality)
+              </span>
             </label>
             <textarea
               id="systemPrompt"
@@ -156,8 +159,7 @@ export function SettingsForm({
                 </p>
               ) : (
                 <p className="text-xs text-secondary-500 dark:text-secondary-400">
-                  Define your AI agent's personality, tone, and behavior
-                  patterns
+                  Define your AI agent&apos;s personality, tone, and behavior
                 </p>
               )}
               <span className="text-xs text-secondary-400 dark:text-secondary-500">
@@ -370,7 +372,7 @@ export function SettingsForm({
 
           {hasChanges && (
             <p className="mt-3 text-xs text-warning-600 dark:text-warning-400 text-center">
-              You have unsaved changes. Don't forget to save your settings.
+              You have unsaved changes. Don&apos;t forget to save your settings.
             </p>
           )}
         </div>

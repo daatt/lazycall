@@ -1,19 +1,24 @@
-import { ApiResponse, Settings } from '@/types'
+import {
+  createDefaultSettings,
+  getSettings,
+  updateSettings,
+} from '@/lib/database'
+import { ApiResponse, Settings, SettingsFormData } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/settings - Retrieve application settings
 export async function GET(_request: NextRequest) {
   try {
-    // TODO: Implement settings retrieval
-    // This will be implemented in task 4.6
+    let settings = await getSettings()
+
+    // If no settings exist, create default settings
+    if (!settings) {
+      settings = await createDefaultSettings()
+    }
 
     const response: ApiResponse<Settings> = {
       success: true,
-      data: {
-        id: 'default',
-        systemPrompt: 'You are a helpful AI assistant making phone calls.',
-        updatedAt: new Date(),
-      } as Settings,
+      data: settings,
       message: 'Settings retrieved successfully',
     }
 
@@ -30,19 +35,27 @@ export async function GET(_request: NextRequest) {
 // PUT /api/settings - Update application settings
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body: SettingsFormData = await request.json()
 
-    // TODO: Implement settings update logic
-    // This will be implemented in task 4.6
+    // Validate required fields
+    if (!body.systemPrompt || body.systemPrompt.trim().length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'System prompt is required' },
+        { status: 400 }
+      )
+    }
+
+    // Update settings using the database utility function
+    const settings = await updateSettings({
+      systemPrompt: body.systemPrompt.trim(),
+      defaultAssistantId: body.defaultAssistantId,
+      openaiApiKey: body.openaiApiKey,
+      vapiApiKey: body.vapiApiKey,
+    })
 
     const response: ApiResponse<Settings> = {
       success: true,
-      data: {
-        id: 'default',
-        systemPrompt: body.systemPrompt,
-        defaultAssistantId: body.defaultAssistantId,
-        updatedAt: new Date(),
-      } as Settings,
+      data: settings,
       message: 'Settings updated successfully',
     }
 

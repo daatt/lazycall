@@ -1,15 +1,69 @@
-import { ApiResponse, Call, CallFormData } from '@/types'
+import { createOutboundCall } from '@/lib/calls'
+import { getCalls, searchCalls } from '@/lib/database'
+import {
+  ApiResponse,
+  Call,
+  CallFormData,
+  CallHistoryFilters,
+  PaginatedResponse,
+} from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/calls - Retrieve call history with optional filtering
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    // TODO: Implement call history retrieval with filtering and pagination
-    // This will be implemented in task 4.6
+    const { searchParams } = new URL(request.url)
 
-    const response: ApiResponse<Call[]> = {
+    // Parse query parameters
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '25')
+    const status = searchParams.get('status') || undefined
+    const assistantId = searchParams.get('assistantId') || undefined
+    const phoneNumber = searchParams.get('phoneNumber') || undefined
+    const query = searchParams.get('q') || undefined
+    const dateFromStr = searchParams.get('dateFrom')
+    const dateToStr = searchParams.get('dateTo')
+
+    const dateFrom = dateFromStr ? new Date(dateFromStr) : undefined
+    const dateTo = dateToStr ? new Date(dateToStr) : undefined
+
+    let calls: Call[]
+    let total: number
+
+    // If there's a search query, use search function
+    if (query) {
+      calls = await searchCalls(query, limit)
+      total = calls.length // For search, we just return the results count
+    } else {
+      // Use filtered retrieval
+      const filters: CallHistoryFilters = {
+        page,
+        limit,
+        status: status as any,
+        assistantId,
+        phoneNumber,
+        dateFrom,
+        dateTo,
+      }
+
+      const result = await getCalls(filters)
+      calls = result.calls
+      total = result.total
+    }
+
+    const totalPages = Math.ceil(total / limit)
+
+    const paginatedResponse: PaginatedResponse<Call> = {
+      data: calls,
+      page,
+      limit,
+      total,
+      totalPages,
+    }
+
+    const response: ApiResponse<PaginatedResponse<Call>> = {
       success: true,
-      data: [],
+      data: paginatedResponse,
       message: 'Call history retrieved successfully',
     }
 
@@ -28,18 +82,34 @@ export async function POST(request: NextRequest) {
   try {
     const body: CallFormData = await request.json()
 
-    // TODO: Implement call creation logic
-    // This will be implemented in task 3.3 and 4.6
+    // Validate required fields
+    if (!body.phoneNumber) {
+      return NextResponse.json(
+        { success: false, error: 'Phone number is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!body.customPrompt && !body.assistantId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Either a custom prompt or assistant ID is required',
+        },
+        { status: 400 }
+      )
+    }
+
+    // Create the call using the library function
+    const call = await createOutboundCall({
+      phoneNumber: body.phoneNumber,
+      assistantId: body.assistantId,
+      customPrompt: body.customPrompt,
+    })
 
     const response: ApiResponse<Call> = {
       success: true,
-      data: {
-        id: 'placeholder',
-        phoneNumber: body.phoneNumber,
-        status: 'creating',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as Call,
+      data: call,
       message: 'Call created successfully',
     }
 

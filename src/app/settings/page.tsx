@@ -101,8 +101,8 @@ export default function SettingsPage() {
           <h1 className="text-3xl font-bold text-secondary-900 dark:text-secondary-100 mb-2">
             Settings
           </h1>
-          <p className="text-secondary-600 dark:text-secondary-400">
-            Configure your AI assistant's behavior and system settings.
+          <p className="text-secondary-600 dark:text-secondary-400 mb-6">
+            Configure your AI agent&apos;s behavior and API settings.
           </p>
         </div>
 

@@ -1,5 +1,10 @@
 import type { Call, CallFormData } from '../types'
-import { createCall as createDbCall, getAssistant, getCall, updateCall } from './database'
+import {
+  createCall as createDbCall,
+  getAssistant,
+  getCall,
+  updateCall,
+} from './database'
 import { retrieveCallTranscript } from './transcripts'
 import { vapi } from './vapi'
 
@@ -27,7 +32,6 @@ export async function createOutboundCall(
 ): Promise<Call> {
   try {
     // 1. Get assistant details if specified
-    let assistantId: string | undefined
     let vapiAssistantId: string | undefined
 
     if (data.assistantId) {
@@ -141,7 +145,9 @@ export async function updateCallStatus(
 /**
  * Gets a call with its transcript if available
  */
-export async function getCallWithTranscript(callId: string): Promise<Call & { hasTranscript: boolean }> {
+export async function getCallWithTranscript(
+  callId: string
+): Promise<Call & { hasTranscript: boolean }> {
   try {
     const call = await getCall(callId)
     if (!call) {
@@ -150,7 +156,11 @@ export async function getCallWithTranscript(callId: string): Promise<Call & { ha
 
     // Check if transcript is available and try to retrieve it if the call is completed
     let hasTranscript = false
-    if (call.status === 'completed' && call.transcripts && call.transcripts.length > 0) {
+    if (
+      call.status === 'completed' &&
+      call.transcripts &&
+      call.transcripts.length > 0
+    ) {
       hasTranscript = true
     } else if (call.status === 'completed') {
       // Try to retrieve transcript if not already available
@@ -170,4 +180,4 @@ export async function getCallWithTranscript(callId: string): Promise<Call & { ha
     console.error('Failed to get call with transcript:', error)
     throw new Error('Failed to get call with transcript')
   }
-} 
+}

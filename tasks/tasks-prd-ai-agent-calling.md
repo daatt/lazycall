@@ -78,7 +78,7 @@
   - [x] 4.3 Implement settings page for configuring system prompt ✅ COMPLETED
   - [x] 4.4 Create call history page with search, filtering, and pagination ✅ COMPLETED
   - [x] 4.5 Build TranscriptViewer component for displaying call results ✅ COMPLETED
-  - [ ] 4.6 Implement API routes for calls, settings, and assistants management
+  - [x] 4.6 Implement API routes for calls, settings, and assistants management ✅ COMPLETED
   - [ ] 4.7 Add form validation and user feedback for all interactions
   - [ ] 4.8 Create loading states and error handling for all pages
 

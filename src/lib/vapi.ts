@@ -158,7 +158,12 @@ export class VapiClient {
     options?: VapiRequestOptions
   ): Promise<VapiAssistant> {
     return vapiErrorHandler.executeWithRetry(
-      () => this.makeRequest<VapiAssistant>(`/assistant/${assistantId}`, 'PATCH', config),
+      () =>
+        this.makeRequest<VapiAssistant>(
+          `/assistant/${assistantId}`,
+          'PATCH',
+          config
+        ),
       'vapi',
       'updateAssistant'
     )
@@ -254,16 +259,20 @@ export class VapiClient {
     try {
       // Get the full call object which includes transcript in artifact field
       const call = await vapiErrorHandler.executeWithRetry(
-        () => this.makeRequest<VapiCall & { artifact?: { transcript?: string } }>(`/call/${callId}`, 'GET'),
+        () =>
+          this.makeRequest<VapiCall & { artifact?: { transcript?: string } }>(
+            `/call/${callId}`,
+            'GET'
+          ),
         'vapi',
         'getCall'
       )
-      
+
       // Extract transcript from the artifact field
       if (call.artifact?.transcript) {
         return call.artifact.transcript
       }
-      
+
       return null
     } catch (error) {
       console.warn('Failed to retrieve call or transcript:', error)
@@ -275,7 +284,9 @@ export class VapiClient {
   // PHONE NUMBER METHODS
   // =============================================================================
 
-  async listPhoneNumbers(options?: VapiRequestOptions): Promise<VapiPhoneNumber[]> {
+  async listPhoneNumbers(
+    options?: VapiRequestOptions
+  ): Promise<VapiPhoneNumber[]> {
     return vapiErrorHandler.executeWithRetry(
       () => this.makeRequest<VapiPhoneNumber[]>('/phone-number', 'GET'),
       'vapi',
@@ -288,7 +299,11 @@ export class VapiClient {
     options?: VapiRequestOptions
   ): Promise<VapiPhoneNumber> {
     return vapiErrorHandler.executeWithRetry(
-      () => this.makeRequest<VapiPhoneNumber>(`/phone-number/${phoneNumberId}`, 'GET'),
+      () =>
+        this.makeRequest<VapiPhoneNumber>(
+          `/phone-number/${phoneNumberId}`,
+          'GET'
+        ),
       'vapi',
       'getPhoneNumber'
     )
@@ -322,7 +337,12 @@ export class VapiClient {
     options?: VapiRequestOptions
   ): Promise<VapiPhoneNumber> {
     return vapiErrorHandler.executeWithRetry(
-      () => this.makeRequest<VapiPhoneNumber>(`/phone-number/${phoneNumberId}`, 'PATCH', config),
+      () =>
+        this.makeRequest<VapiPhoneNumber>(
+          `/phone-number/${phoneNumberId}`,
+          'PATCH',
+          config
+        ),
       'vapi',
       'updatePhoneNumber'
     )
@@ -349,11 +369,11 @@ export class VapiClient {
     data?: unknown
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
-    
+
     const response = await fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
       },
       body: data ? JSON.stringify(data) : undefined,
@@ -371,11 +391,14 @@ export class VapiClient {
     }
 
     // Handle empty responses
-    if (response.status === 204 || response.headers.get('content-length') === '0') {
+    if (
+      response.status === 204 ||
+      response.headers.get('content-length') === '0'
+    ) {
       return undefined as T
     }
 
-    return await response.json() as T
+    return (await response.json()) as T
   }
 
   // =============================================================================

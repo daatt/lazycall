@@ -1,8 +1,8 @@
 import type { Assistant, CreateAssistantData } from '../types'
 import {
-    createAssistant as createDbAssistant,
-    getAssistant as getDbAssistant,
-    updateAssistant as updateDbAssistant,
+  createAssistant as createDbAssistant,
+  getAssistant as getDbAssistant,
+  updateAssistant as updateDbAssistant,
 } from './database'
 import { vapi } from './vapi'
 
@@ -113,4 +113,4 @@ export async function getAssistant(assistantId: string): Promise<Assistant> {
     console.error('Failed to get assistant:', error)
     throw new Error('Failed to get assistant')
   }
-} 
+}
