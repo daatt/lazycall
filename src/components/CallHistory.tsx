@@ -58,26 +58,46 @@ export function CallHistory({
   }
 
   const formatDuration = (seconds?: number): string => {
-    if (!seconds) return '-'
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const secs = seconds % 60
+    if (typeof seconds !== 'number' || seconds < 0) return '--'
 
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${secs}s`
-    } else if (minutes > 0) {
-      return `${minutes}m ${secs}s`
-    } else {
-      return `${secs}s`
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.floor(seconds % 60)
+
+    if (minutes === 0) {
+      return `${remainingSeconds}s`
     }
+
+    return `${minutes}m ${remainingSeconds}s`
   }
 
   const formatCurrency = (amount?: number): string => {
-    if (!amount) return '$0.00'
+    if (typeof amount !== 'number') return '--'
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount)
+  }
+
+  const formatDate = (
+    dateInput: string | Date
+  ): { date: string; time: string } => {
+    try {
+      const date =
+        typeof dateInput === 'string' ? new Date(dateInput) : dateInput
+
+      // Check if it's a valid date
+      if (isNaN(date.getTime())) {
+        return { date: '--', time: '--' }
+      }
+
+      return {
+        date: date.toLocaleDateString(),
+        time: date.toLocaleTimeString(),
+      }
+    } catch (error) {
+      console.warn('Error formatting date:', error, dateInput)
+      return { date: '--', time: '--' }
+    }
   }
 
   const formatPhoneNumber = (phone: string): string => {
@@ -460,9 +480,9 @@ export function CallHistory({
                           {formatCurrency(call.cost)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500 dark:text-secondary-400">
-                          <div>{call.createdAt.toLocaleDateString()}</div>
+                          <div>{formatDate(call.createdAt).date}</div>
                           <div className="text-xs">
-                            {call.createdAt.toLocaleTimeString()}
+                            {formatDate(call.createdAt).time}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

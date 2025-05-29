@@ -381,6 +381,15 @@ export class VapiClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
+      console.error(
+        `Vapi API Error ${response.status} for ${method} ${endpoint}:`,
+        {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          requestData: data,
+        }
+      )
       const error = new Error(
         `Vapi API error: ${response.status} ${response.statusText}`
       ) as ApiError

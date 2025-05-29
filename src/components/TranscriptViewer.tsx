@@ -11,6 +11,23 @@ interface TranscriptViewerProps {
   className?: string
 }
 
+// Helper function to format dates safely
+const formatDate = (dateInput: string | Date): string => {
+  try {
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
+
+    // Check if it's a valid date
+    if (isNaN(date.getTime())) {
+      return '--'
+    }
+
+    return date.toLocaleDateString()
+  } catch (error) {
+    console.warn('Error formatting date:', error, dateInput)
+    return '--'
+  }
+}
+
 export function TranscriptViewer({
   call,
   transcript,
@@ -167,8 +184,7 @@ export function TranscriptViewer({
             Call Transcript
           </h2>
           <p className="text-secondary-600 dark:text-secondary-400 mt-1">
-            {formatPhoneNumber(call.phoneNumber)} •{' '}
-            {call.createdAt.toLocaleDateString()}
+            {formatPhoneNumber(call.phoneNumber)} • {formatDate(call.createdAt)}
           </p>
         </div>
         {onClose && (

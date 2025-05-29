@@ -9,6 +9,26 @@ import { retrieveCallTranscript } from './transcripts'
 import { vapi } from './vapi'
 
 /**
+ * Formats a phone number to E.164 format (e.g., +1234567890)
+ */
+function formatPhoneNumber(phoneNumber: string): string {
+  // Remove all non-digit characters
+  const digits = phoneNumber.replace(/\D/g, '')
+
+  // If it doesn't start with +, add + prefix
+  if (!phoneNumber.startsWith('+')) {
+    // For US numbers, add +1 if it's 10 digits
+    if (digits.length === 10) {
+      return `+1${digits}`
+    }
+    // For other numbers, just add +
+    return `+${digits}`
+  }
+
+  return phoneNumber
+}
+
+/**
  * Gets the first available phone number from the Vapi account
  */
 async function getFirstAvailablePhoneNumber(): Promise<string | undefined> {
@@ -31,6 +51,12 @@ export async function createOutboundCall(
   data: CallFormData & { phoneNumberId?: string }
 ): Promise<Call> {
   try {
+    // Format phone number to E.164 format
+    const formattedPhoneNumber = formatPhoneNumber(data.phoneNumber)
+    console.log(
+      `Formatted phone number: ${data.phoneNumber} -> ${formattedPhoneNumber}`
+    )
+
     // 1. Get assistant details if specified
     let vapiAssistantId: string | undefined
 
@@ -55,22 +81,57 @@ export async function createOutboundCall(
       console.log(`Using phone number ID: ${phoneNumberId}`)
     }
 
-    // 3. Create the call in Vapi API
-    const vapiCall = await vapi.createCall({
+    // 3. Prepare call configuration
+    const callConfig: any = {
       customer: {
-        number: data.phoneNumber,
+        number: formattedPhoneNumber,
       },
       phoneNumberId,
-      assistantId: vapiAssistantId,
-      name: `Call to ${data.phoneNumber}`,
+      name: `Call to ${formattedPhoneNumber}`,
       metadata: {
         customPrompt: data.customPrompt,
       },
-    })
+    }
 
-    // 4. Create the call in our database
+    // If we have an assistant ID, use it
+    if (vapiAssistantId) {
+      callConfig.assistantId = vapiAssistantId
+    } else if (data.customPrompt) {
+      // If we have a custom prompt but no assistant, create an inline assistant
+      callConfig.assistant = {
+        name: `Custom Assistant for ${formattedPhoneNumber}`,
+        model: {
+          provider: 'openai',
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: data.customPrompt,
+            },
+          ],
+          temperature: 0.7,
+        },
+        voice: {
+          provider: 'playht',
+          voiceId: 'jennifer',
+        },
+        firstMessage: 'Hello! How can I help you today?',
+      }
+    } else {
+      throw new Error('Either an assistant ID or custom prompt is required')
+    }
+
+    console.log(
+      'Creating call with config:',
+      JSON.stringify(callConfig, null, 2)
+    )
+
+    // 4. Create the call in Vapi API
+    const vapiCall = await vapi.createCall(callConfig)
+
+    // 5. Create the call in our database
     const call = await createDbCall({
-      phoneNumber: data.phoneNumber,
+      phoneNumber: formattedPhoneNumber,
       status: 'creating',
       assistantId: data.assistantId,
       vapiCallId: vapiCall.id,
@@ -84,6 +145,10 @@ export async function createOutboundCall(
     return call
   } catch (error) {
     console.error('Failed to create outbound call:', error)
+    // Log more details about the error
+    if (error instanceof Error && 'details' in error) {
+      console.error('Error details:', (error as any).details)
+    }
     throw new Error('Failed to create outbound call')
   }
 }

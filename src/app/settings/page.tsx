@@ -2,8 +2,14 @@
 
 import { SettingsForm } from '@/components/SettingsForm'
 import DashboardLayout from '@/components/ui/DashboardLayout'
-import { SettingsFormData } from '@/types'
-import { useEffect, useState } from 'react'
+import {
+  ApiResponse,
+  Assistant,
+  PaginatedResponse,
+  Settings,
+  SettingsFormData,
+} from '@/types'
+import { useCallback, useEffect, useState } from 'react'
 
 export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -15,51 +21,100 @@ export default function SettingsPage() {
     openaiApiKey: '',
     vapiApiKey: '',
   })
+  const [assistants, setAssistants] = useState<
+    Array<{ id: string; name: string }>
+  >([])
 
   // Set document title
   useEffect(() => {
     document.title = 'Settings - AI Agent Calling'
   }, [])
 
-  // Mock assistants data - this will be replaced with real API call in task 4.6
-  const [assistants] = useState([
-    { id: 'assistant-1', name: 'Professional Assistant' },
-    { id: 'assistant-2', name: 'Friendly Assistant' },
-    { id: 'assistant-3', name: 'Business Assistant' },
-  ])
-
-  // Load settings on component mount
-  useEffect(() => {
-    loadSettings()
-  }, [])
-
-  const loadSettings = async () => {
+  // Load settings and assistants on component mount
+  const loadData = useCallback(async () => {
     setIsFetching(true)
     try {
-      // TODO: Implement actual API call when task 4.6 is completed
-      console.log('Loading settings...')
+      // Load settings and assistants in parallel
+      const [settingsResponse, assistantsResponse] = await Promise.all([
+        loadSettings(),
+        loadAssistants(),
+      ])
 
-      // Simulate API call with default settings
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      const defaultSettings: SettingsFormData = {
-        systemPrompt:
-          "You are a helpful AI assistant making phone calls on behalf of the user. Be polite, professional, and accomplish the task efficiently. Always introduce yourself clearly, state the purpose of the call, and be respectful of the person's time. If you encounter any issues or the person seems confused, politely clarify and offer to call back at a better time.",
-        defaultAssistantId: undefined,
-        openaiApiKey: '',
-        vapiApiKey: '',
+      if (!settingsResponse || !assistantsResponse) {
+        throw new Error('Failed to load required data')
       }
-
-      setSettings(defaultSettings)
     } catch (error) {
-      console.error('Failed to load settings:', error)
-      setStatusMessage('Failed to load settings. Using defaults.')
+      console.error('Failed to load data:', error)
+      setStatusMessage('Failed to load settings. Please refresh the page.')
 
       setTimeout(() => {
         setStatusMessage(null)
       }, 5000)
     } finally {
       setIsFetching(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const loadSettings = async (): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/settings')
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const data: ApiResponse<Settings> = await response.json()
+
+      if (!data.success || !data.data) {
+        throw new Error(data.error || 'Invalid response format')
+      }
+
+      // Transform Settings to SettingsFormData
+      const formData: SettingsFormData = {
+        systemPrompt: data.data.systemPrompt,
+        defaultAssistantId: data.data.defaultAssistantId,
+        openaiApiKey: data.data.openaiApiKey || '',
+        vapiApiKey: data.data.vapiApiKey || '',
+      }
+
+      setSettings(formData)
+      return true
+    } catch (error) {
+      console.error('Failed to load settings:', error)
+      return false
+    }
+  }
+
+  const loadAssistants = async (): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/assistants?isActive=true&limit=100')
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const data: ApiResponse<PaginatedResponse<Assistant>> =
+        await response.json()
+
+      if (!data.success || !data.data) {
+        throw new Error(data.error || 'Invalid response format')
+      }
+
+      // Transform to simple format for the form
+      const simpleAssistants = data.data.data.map(assistant => ({
+        id: assistant.id,
+        name: assistant.name,
+      }))
+
+      setAssistants(simpleAssistants)
+      return true
+    } catch (error) {
+      console.error('Failed to load assistants:', error)
+      return false
     }
   }
 
@@ -68,13 +123,36 @@ export default function SettingsPage() {
     setStatusMessage('Saving settings...')
 
     try {
-      // TODO: Implement actual API call when task 4.6 is completed
-      console.log('Saving settings:', formData)
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(
+          errorData.error || `HTTP ${response.status}: ${response.statusText}`
+        )
+      }
 
-      setSettings(formData)
+      const data: ApiResponse<Settings> = await response.json()
+
+      if (!data.success || !data.data) {
+        throw new Error(data.error || 'Invalid response format')
+      }
+
+      // Update local state with saved data
+      const updatedFormData: SettingsFormData = {
+        systemPrompt: data.data.systemPrompt,
+        defaultAssistantId: data.data.defaultAssistantId,
+        openaiApiKey: data.data.openaiApiKey || '',
+        vapiApiKey: data.data.vapiApiKey || '',
+      }
+
+      setSettings(updatedFormData)
       setStatusMessage('Settings saved successfully!')
 
       // Clear success message after 3 seconds
@@ -83,7 +161,9 @@ export default function SettingsPage() {
       }, 3000)
     } catch (error) {
       console.error('Failed to save settings:', error)
-      setStatusMessage('Failed to save settings. Please try again.')
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred'
+      setStatusMessage(`Failed to save settings: ${errorMessage}`)
 
       // Clear error message after 5 seconds
       setTimeout(() => {
@@ -160,7 +240,7 @@ export default function SettingsPage() {
               Development Progress
             </h3>
             <p className="text-secondary-600 dark:text-secondary-400 mt-1">
-              Task 4.3 - Settings page configuration ✅
+              Task 4.7 - Settings page with real API integration ✅
             </p>
           </div>
           <div className="card-body">
@@ -176,25 +256,29 @@ export default function SettingsPage() {
                   <li>• Form validation & UX</li>
                   <li>• Settings preview</li>
                   <li>• Change tracking</li>
+                  <li>• Real API integration</li>
+                  <li>• Error handling & feedback</li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-medium text-secondary-900 dark:text-secondary-100 mb-2">
-                  🔄 Simulated
+                  ✅ Real API Calls
                 </h4>
                 <ul className="space-y-1 text-secondary-600 dark:text-secondary-400">
-                  <li>• Settings loading (API call)</li>
-                  <li>• Settings saving (API call)</li>
-                  <li>• Assistant list (mock data)</li>
-                  <li>• Status feedback</li>
+                  <li>• GET /api/settings (loading)</li>
+                  <li>• PUT /api/settings (saving)</li>
+                  <li>• GET /api/assistants (dropdown)</li>
+                  <li>• Comprehensive error handling</li>
+                  <li>• Status feedback & validation</li>
+                  <li>• Parallel data loading</li>
                 </ul>
               </div>
             </div>
-            <div className="mt-4 p-3 bg-secondary-50 dark:bg-secondary-800 rounded-lg">
-              <p className="text-xs text-secondary-600 dark:text-secondary-400">
-                <strong>Note:</strong> Settings are currently simulated. Real
-                database integration will be implemented in Task 4.6 (API
-                routes).
+            <div className="mt-4 p-3 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-700 rounded-lg">
+              <p className="text-xs text-success-700 dark:text-success-300">
+                <strong>Status:</strong> Settings page now uses real API
+                endpoints with comprehensive error handling and user feedback.
+                All data is persisted to the database.
               </p>
             </div>
           </div>

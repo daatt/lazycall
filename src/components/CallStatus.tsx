@@ -7,6 +7,45 @@ interface CallStatusProps {
   className?: string
 }
 
+// Helper function to format time safely
+const formatTime = (dateInput: string | Date | null | undefined): string => {
+  if (!dateInput) return '--'
+
+  try {
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
+
+    // Check if it's a valid date
+    if (isNaN(date.getTime())) {
+      return '--'
+    }
+
+    return date.toLocaleTimeString()
+  } catch (error) {
+    console.warn('Error formatting time:', error, dateInput)
+    return '--'
+  }
+}
+
+// Helper function to format duration safely
+const formatDuration = (seconds?: number): string => {
+  if (typeof seconds !== 'number' || seconds < 0) return '--'
+
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = Math.floor(seconds % 60)
+
+  return `${minutes}m ${remainingSeconds}s`
+}
+
+// Helper function to format cost safely
+const formatCost = (amount?: number): string => {
+  if (typeof amount !== 'number') return '--'
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 4,
+  }).format(amount)
+}
+
 const statusConfig: Record<
   CallStatusType,
   { label: string; color: string; bgColor: string }
@@ -68,25 +107,21 @@ export function CallStatus({ call, className = '' }: CallStatusProps) {
         {call.startedAt && (
           <div className="flex justify-between">
             <span className="text-gray-600">Started:</span>
-            <span className="font-medium">
-              {new Date(call.startedAt).toLocaleTimeString()}
-            </span>
+            <span className="font-medium">{formatTime(call.startedAt)}</span>
           </div>
         )}
 
         {call.duration && (
           <div className="flex justify-between">
             <span className="text-gray-600">Duration:</span>
-            <span className="font-medium">
-              {Math.round(call.duration / 60)}m {call.duration % 60}s
-            </span>
+            <span className="font-medium">{formatDuration(call.duration)}</span>
           </div>
         )}
 
         {call.cost && (
           <div className="flex justify-between">
             <span className="text-gray-600">Cost:</span>
-            <span className="font-medium">${call.cost.toFixed(4)}</span>
+            <span className="font-medium">{formatCost(call.cost)}</span>
           </div>
         )}
       </div>

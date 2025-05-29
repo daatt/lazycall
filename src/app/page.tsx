@@ -2,7 +2,7 @@
 
 import { CallForm } from '@/components/CallForm'
 import DashboardLayout from '@/components/ui/DashboardLayout'
-import { CallFormData } from '@/types'
+import { ApiResponse, Call, CallFormData } from '@/types'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -10,32 +10,51 @@ export default function Home() {
   const [isCreatingCall, setIsCreatingCall] = useState(false)
   const [showCallForm, setShowCallForm] = useState(false)
   const [callStatus, setCallStatus] = useState<string | null>(null)
+  const [lastCreatedCall, setLastCreatedCall] = useState<Call | null>(null)
 
   const handleCreateCall = async (formData: CallFormData) => {
     setIsCreatingCall(true)
     setCallStatus('Creating call...')
 
     try {
-      // TODO: Implement actual API call when task 4.6 is completed
-      console.log('Creating call with data:', formData)
+      const response = await fetch('/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(
+          errorData.error || `HTTP ${response.status}: ${response.statusText}`
+        )
+      }
 
-      setCallStatus('Call initiated successfully!')
+      const data: ApiResponse<Call> = await response.json()
+
+      if (!data.success || !data.data) {
+        throw new Error(data.error || 'Invalid response format')
+      }
+
+      setLastCreatedCall(data.data)
+      setCallStatus(`Call initiated successfully! Call ID: ${data.data.id}`)
       setShowCallForm(false)
 
       // Reset after showing success
       setTimeout(() => {
         setCallStatus(null)
-      }, 3000)
+      }, 10000) // Show for 10 seconds for real calls
     } catch (error) {
       console.error('Failed to create call:', error)
-      setCallStatus('Failed to create call. Please try again.')
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred'
+      setCallStatus(`Failed to create call: ${errorMessage}`)
 
       setTimeout(() => {
         setCallStatus(null)
-      }, 5000)
+      }, 8000) // Show errors longer
     } finally {
       setIsCreatingCall(false)
     }
@@ -61,8 +80,8 @@ export default function Home() {
       {/* Status Message */}
       {callStatus && (
         <div
-          className={`card max-w-2xl mx-auto mb-8 ${
-            callStatus.includes('success')
+          className={`card max-w-2xl mx-auto ${
+            callStatus.includes('successfully')
               ? 'border-success-200 bg-success-50 dark:bg-success-900/20'
               : callStatus.includes('Failed')
                 ? 'border-error-200 bg-error-50 dark:bg-error-900/20'
@@ -72,7 +91,7 @@ export default function Home() {
           <div className="card-body text-center">
             <p
               className={`font-medium ${
-                callStatus.includes('success')
+                callStatus.includes('successfully')
                   ? 'text-success-700 dark:text-success-300'
                   : callStatus.includes('Failed')
                     ? 'text-error-700 dark:text-error-300'
@@ -81,6 +100,17 @@ export default function Home() {
             >
               {callStatus}
             </p>
+            {lastCreatedCall && callStatus.includes('successfully') && (
+              <div className="mt-3 text-sm text-success-600 dark:text-success-400">
+                <p>Phone: {lastCreatedCall.phoneNumber}</p>
+                <p>Status: {lastCreatedCall.status}</p>
+                {lastCreatedCall.vapiCallId && (
+                  <p className="text-xs opacity-75">
+                    Vapi ID: {lastCreatedCall.vapiCallId}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -290,7 +320,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Development Status */}
+      {/* Development Progress */}
       <div className="mt-8 max-w-4xl mx-auto">
         <div className="card">
           <div className="card-header">
@@ -298,7 +328,7 @@ export default function Home() {
               Development Progress
             </h3>
             <p className="text-secondary-600 dark:text-secondary-400 mt-1">
-              Task 4.2 - CallForm component completed ✅
+              Task 4.7 - Dashboard with real call creation ✅
             </p>
           </div>
           <div className="card-body">
@@ -314,19 +344,30 @@ export default function Home() {
                   <li>• CallForm with validation</li>
                   <li>• Phone number formatting</li>
                   <li>• Form integration & UX</li>
+                  <li>• Real call creation via API</li>
+                  <li>• Comprehensive error handling</li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-medium text-secondary-900 dark:text-secondary-100 mb-2">
-                  🚧 Next Steps
+                  ✅ Real API Integration
                 </h4>
                 <ul className="space-y-1 text-secondary-600 dark:text-secondary-400">
-                  <li>• Settings page form (Task 4.3)</li>
-                  <li>• Call history implementation (Task 4.4)</li>
-                  <li>• TranscriptViewer (Task 4.5)</li>
-                  <li>• API routes (Task 4.6)</li>
+                  <li>• POST /api/calls (creates real calls)</li>
+                  <li>• Vapi API integration</li>
+                  <li>• Database call storage</li>
+                  <li>• Status feedback & validation</li>
+                  <li>• Call ID tracking</li>
+                  <li>• Error message details</li>
                 </ul>
               </div>
+            </div>
+            <div className="mt-4 p-3 bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-700 rounded-lg">
+              <p className="text-xs text-warning-700 dark:text-warning-300">
+                <strong>⚠️ Warning:</strong> Call creation now makes REAL phone
+                calls via Vapi! Be careful with phone numbers you enter. Test
+                with your own number first.
+              </p>
             </div>
           </div>
         </div>
