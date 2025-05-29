@@ -75,9 +75,9 @@
 - [ ] 4.0 Core Web Application Pages
   - [x] 4.1 Create main dashboard layout with navigation and responsive design ✅ COMPLETED
   - [x] 4.2 Build CallForm component for entering phone number and call prompt ✅ COMPLETED
-  - [ ] 4.3 Implement settings page for configuring system prompt
-  - [ ] 4.4 Create call history page with search, filtering, and pagination
-  - [ ] 4.5 Build TranscriptViewer component for displaying call results
+  - [x] 4.3 Implement settings page for configuring system prompt ✅ COMPLETED
+  - [x] 4.4 Create call history page with search, filtering, and pagination ✅ COMPLETED
+  - [x] 4.5 Build TranscriptViewer component for displaying call results ✅ COMPLETED
   - [ ] 4.6 Implement API routes for calls, settings, and assistants management
   - [ ] 4.7 Add form validation and user feedback for all interactions
   - [ ] 4.8 Create loading states and error handling for all pages
