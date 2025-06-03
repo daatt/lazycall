@@ -90,3 +90,13 @@
   - [ ] 5.5 Add call completion notifications and result display
   - [ ] 5.6 Create call cancellation functionality for active calls
   - [ ] 5.7 Implement call history auto-refresh when new calls complete 
+
+- [ ] 6.0 Authentication and User Management
+  - [ ] 6.1 Install and configure Auth.js (NextAuth.js) for Next.js 14 App Router
+  - [ ] 6.2 Set up authentication providers (Google, GitHub, or email/password)
+  - [ ] 6.3 Create user database schema and integrate with Prisma
+  - [ ] 6.4 Implement login/logout functionality with session management
+  - [ ] 6.5 Add authentication middleware to protect API routes
+  - [ ] 6.6 Create user profile page for account management
+  - [ ] 6.7 Associate calls, settings, and assistants with authenticated users
+  - [ ] 6.8 Add user-specific data filtering across all pages and API endpoints
