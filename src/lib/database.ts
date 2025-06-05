@@ -2,29 +2,29 @@
 // Comprehensive utility functions for all database models
 
 import {
-  Assistant,
-  AssistantFilters,
-  AssistantStats,
-  Call,
-  CallHistoryFilters,
-  CallStats,
-  CreateAssistantData,
-  CreateCallData,
-  CreateSettingsData,
-  CreateTranscriptData,
-  PrismaAssistant,
-  PrismaCall,
-  PrismaSettings,
-  PrismaTranscript,
-  Settings,
-  Transcript,
-  TranscriptFilters,
-  TranscriptProcessingStatus,
-  TranscriptStats,
-  UpdateAssistantData,
-  UpdateCallData,
-  UpdateSettingsData,
-  UpdateTranscriptData,
+    Assistant,
+    AssistantFilters,
+    AssistantStats,
+    Call,
+    CallHistoryFilters,
+    CallStats,
+    CreateAssistantData,
+    CreateCallData,
+    CreateSettingsData,
+    CreateTranscriptData,
+    PrismaAssistant,
+    PrismaCall,
+    PrismaSettings,
+    PrismaTranscript,
+    Settings,
+    Transcript,
+    TranscriptFilters,
+    TranscriptProcessingStatus,
+    TranscriptStats,
+    UpdateAssistantData,
+    UpdateCallData,
+    UpdateSettingsData,
+    UpdateTranscriptData,
 } from '@/types'
 import { PrismaClient } from '@prisma/client'
 
@@ -920,7 +920,18 @@ export async function createDefaultSettings(
       data: {
         systemPrompt:
           overrides?.systemPrompt ||
-          'You are a helpful AI assistant making phone calls on behalf of the user. Be polite, professional, and accomplish the task efficiently.',
+          `You are a friendly and professional AI assistant making phone calls on behalf of the user. Your goal is to help accomplish tasks efficiently while maintaining a natural, conversational tone.
+
+Key guidelines:
+- Start conversations naturally with a friendly greeting and brief introduction
+- Clearly state your purpose for calling in a conversational way
+- Listen carefully and respond appropriately to the person's needs
+- Be empathetic and understanding of their situation
+- Keep responses concise but informative
+- If the person seems busy or distracted, offer to call back at a better time
+- End conversations politely with a clear summary of next steps
+
+Remember to adapt your tone and approach based on the context of the call and the person's responses.`,
         defaultAssistantId: undefinedToNull(overrides?.defaultAssistantId),
         openaiApiKey: undefinedToNull(overrides?.openaiApiKey),
         vapiApiKey: undefinedToNull(overrides?.vapiApiKey),

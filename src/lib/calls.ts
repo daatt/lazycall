@@ -51,19 +51,19 @@ function generateFirstMessage(customPrompt: string): string {
   const prompt = customPrompt.toLowerCase().trim()
   
   if (prompt.includes('schedule') && (prompt.includes('lunch') || prompt.includes('dinner') || prompt.includes('meal'))) {
-    return "Hi there! I'm calling about getting together for a meal. How are you doing?"
+    return "Hi there! I'm calling on behalf of Alex about getting together for a meal. How are you doing today?"
   } else if (prompt.includes('schedule') || prompt.includes('appointment')) {
-    return "Hi! I'm calling to help schedule something for you. How are you doing today?"
+    return "Hello! I'm calling on behalf of Alex to help schedule something. Do you have a moment to chat?"
   } else if (prompt.includes('inquire') || prompt.includes('ask about')) {
-    return "Hello! I'm calling to ask about something. Do you have a moment to chat?"
+    return "Hi there! I'm calling on behalf of Alex to ask about something. Is this a good time to talk?"
   } else if (prompt.includes('reservation')) {
-    return "Hi! I'm calling to help with a reservation. How are you today?"
+    return "Hello! I'm calling on behalf of Alex to help with a reservation. How are you today?"
   } else if (prompt.includes('information') || prompt.includes('details')) {
-    return "Hello! I'm calling to get some information. Do you have a minute to talk?"
+    return "Hi! I'm calling on behalf of Alex to get some information. Do you have a minute to chat?"
   } else if (prompt.includes('cancel') || prompt.includes('reschedule')) {
-    return "Hi! I'm calling about making a change to something. How are you doing?"
+    return "Hello! I'm calling on behalf of Alex about making a change to something. Is this a good time?"
   } else {
-    return "Hello! I'm calling to help with something. Do you have a moment to talk?"
+    return "Hi there! I'm calling on behalf of Alex to help with something. Do you have a moment to talk?"
   }
 }
 
